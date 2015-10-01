@@ -37,3 +37,7 @@ build
 .idea/workspace.xml
 
 *.iml
+
+### Temporary Files ###
+\#*
+*~
