@@ -1,8 +1,23 @@
 from flask import Flask
+from flask.ext.security import SQLAlchemyUserDatastore, Security
 from flask_restful import Resource, Api
+from os import environ
+from flask.ext.sqlalchemy import SQLAlchemy
+
 
 app = Flask(__name__)
+app.config.from_object(environ['APP_SETTINGS'])
+
+
 api = Api(app)
+db = SQLAlchemy(app)
+
+from models import *
+
+# Setup Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
+
 
 
 class HelloWorld(Resource):
