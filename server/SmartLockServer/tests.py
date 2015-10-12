@@ -41,7 +41,7 @@ class SmartLockTestCase(unittest.TestCase):
 
     def test_auth_good(self):
         """ Ensure that good user credentials are accepted - Sam """
-        response = self.app.get('/protected-resource', headers=self.auth_header("tester@mail.com", "python"))
+        response = self.app.get('/protected-resource', headers=self.auth_header("miguel", "python"))
         self.assertEqual(200, response.status_code)
 
 

@@ -1,11 +1,9 @@
 from flask.ext.security import RoleMixin, UserMixin
+from flask.ext.security import SQLAlchemyUserDatastore, Security
 
 __author__ = 'mingles'
 
-from SmartLockServer import db
-
-# from app import db
-from sqlalchemy.dialects.postgresql import JSON
+from SmartLockServer import db, app
 
 
 # Define models
@@ -18,6 +16,7 @@ class Role(db.Model, RoleMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
@@ -27,3 +26,7 @@ class User(db.Model, UserMixin):
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
+
+# Setup Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
