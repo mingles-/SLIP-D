@@ -55,19 +55,18 @@ class OpenLock(Resource):
     """
     decorators = [auth.login_required]
 
-    def get(self, lockid):
-
+    def put(self, lock_id):
         # check if lockid is associated with user in db
-        if lockid == 123:
-            return {'lock': 'open', 'error': 'none'}, 200
+        if lock_id == 123:
+            return "", 200
         else:
-            return {'lock': 'closed', 'error': 'lockID doesnt match user'}, 403
+            return "", 403
 
 
 api.add_resource(HelloWorld, '/')
 api.add_resource(Mingles, '/mingles')
 api.add_resource(ProtectedResource, '/protected-resource')
-api.add_resource(OpenLock, '/open/<int:lockid>')
+api.add_resource(OpenLock, '/open/<int:lock_id>')
 
 if __name__ == '__main__':
     app.run(debug=True)
