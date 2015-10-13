@@ -41,8 +41,23 @@ class SmartLockTestCase(unittest.TestCase):
 
     def test_auth_good(self):
         """ Ensure that good user credentials are accepted - Sam """
-        response = self.app.get('/protected-resource', headers=self.auth_header("miguel", "python"))
+        response = self.app.get('/protected-resource', headers=self.auth_header("mingles", "python"))
         self.assertEqual(200, response.status_code)
+
+    def open_lock_good(self):
+        """Ensure that good user credentials are accepted with the open lock"""
+        response = self.app.get('/openlock/123', headers=self.auth_header("mingles", "python"))
+        self.assertEqual(200, response.status_code)
+
+    def open_lock_nae_lock(self):
+        """ Ensure that good user credentials are accepted"""
+        response = self.app.get('/openlock', headers=self.auth_header("mingles", "python"))
+        self.assertEqual(404, response.status_code)
+
+    def open_lock_wrong_login(self):
+        """ Ensure that good user credentials are accepted"""
+        response = self.app.get('/openlock', headers=self.auth_header("mingles", "iscool123"))
+        self.assertEqual(404, response.status_code)
 
 
 if __name__ == '__main__':
