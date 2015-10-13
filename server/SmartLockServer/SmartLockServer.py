@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, make_response
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, reqparse
 from os import environ
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.httpauth import HTTPBasicAuth
@@ -15,9 +15,10 @@ auth = HTTPBasicAuth()
 
 from models import *
 
+
 @auth.get_password
 def get_password(username):
-    if username == 'miguel':
+    if username == 'mingles':
         return 'python'
     return None
 
@@ -48,13 +49,20 @@ class ProtectedResource(Resource):
     def get(self):
         return "Hello", 200
 
+class OpenLock(Resource):
+    """
+    Endpoint which opens the lock
+    """
+    decorators = [auth.login_required]
+    def get(self, lockid):
+        print lockid
+
+        return str(lockid) + " lock opened", 200
 
 api.add_resource(HelloWorld, '/')
 api.add_resource(Mingles, '/mingles')
 api.add_resource(ProtectedResource, '/protected-resource')
-
-print(api.endpoints)
-
+api.add_resource(OpenLock, '/open/<int:lockid>')
 
 if __name__ == '__main__':
     app.run(debug=True)
