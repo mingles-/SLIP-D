@@ -51,19 +51,19 @@ class SmartLockTestCase(unittest.TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_open_lock_bad_id(self):
-        """Ensure that good user credentials are accepted with the open lock """
-        response = self.app.put('/open/124', headers=self.auth_header("mingles", "python"))
-        self.assertEqual(403, response.status_code)
+        """Ensure that good user credentials fail with the an unassociated lock"""
+        response = self.app.get('/open/124', headers=self.auth_header("mingles", "python"))
+        self.assertEqual(405, response.status_code)
 
     def test_open_lock_nae_lock(self):
-        """ Ensure a bad request returns 404 """
-        response = self.app.put('/open', headers=self.auth_header("mingles", "python"))
+        """Ensure that good user credentials are not accepted without a lock"""
+        response = self.app.get('/open', headers=self.auth_header("mingles", "python"))
         self.assertEqual(404, response.status_code)
 
     def test_open_lock_wrong_login(self):
-        """ Ensure that good user credentials are accepted """
-        response = self.app.put('/open/123', headers=self.auth_header("mingles", "iscool123"))
-        self.assertEqual(403, response.status_code)
+        """Ensure that bad password, but corect username is rejected with correct lock"""
+        response = self.app.get('/open/123', headers=self.auth_header("mingles", "iscool123"))
+        self.assertEqual(405, response.status_code)
 
 
 if __name__ == '__main__':
