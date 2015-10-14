@@ -49,6 +49,20 @@ class ProtectedResource(Resource):
         return "Hello", 200
 
 
+class CloseLock(Resource):
+    """
+    This endpoint closes the lock if lockID and associated user is consistent within the database
+    """
+    decorators = [auth.login_required]
+
+    def put(self, lock_id):
+        # check if lockid is associated with user in db
+        if lock_id == 123:
+            return "", 200
+        else:
+            return "", 403
+
+
 class OpenLock(Resource):
     """
     This endpoint opens the lock if lockID and associated user is consistent within the database
@@ -67,6 +81,8 @@ api.add_resource(HelloWorld, '/')
 api.add_resource(Mingles, '/mingles')
 api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(OpenLock, '/open/<int:lock_id>')
+api.add_resource(OpenLock, '/close/<int:lock_id>')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
