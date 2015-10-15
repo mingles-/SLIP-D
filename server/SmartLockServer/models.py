@@ -6,9 +6,14 @@ __author__ = 'mingles'
 from SmartLockServer import db, app
 
 # Define models
-roles_users = db.Table('roles_users',
+role_user = db.Table('role_user',
                        db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
                        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+user_lock = db.Table('user_lock',
+                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+                       db.Column('lock_id', db.Integer(), db.ForeignKey('lock.id')),
+                       db.Column('is_owner', db.Boolean()))
 
 
 class Role(db.Model, RoleMixin):
@@ -20,11 +25,18 @@ class Role(db.Model, RoleMixin):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
+    first_name = db.Column(db.String(255), unique=True)
+    last_name = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
-    roles = db.relationship('Role', secondary=roles_users,
+    roles = db.relationship('Role', secondary=role_user,
                             backref=db.backref('users', lazy='dynamic'))
+
+
+class Lock(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    locked = db.Column(db.Boolean())
 
 
 # Setup Flask-Security
