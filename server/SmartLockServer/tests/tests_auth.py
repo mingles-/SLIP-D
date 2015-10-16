@@ -55,12 +55,12 @@ class SmartLockTestCase(BaseTest):
         response = self.app.get('/protected-resource', headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(200, response.status_code)
 
-    # def test_hashed_password(self):
-    #     """Ensure that hashed password stored in database doesn't equal given password"""
-    #     self.assertNotEqual(SmartLockServer.get_password("test@mail.com"), "python")
-    #     self.assertTrue(SmartLockServer.check_auth("test@mail.com", "python"))
-
-
+    def test_register_lock_success(self):
+        """Register a lock to a user"""
+        response = self.app.post('/register-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(email="test@mail.com", lock_id=123))
+        self.assertEqual(200, response.status_code)
+        response = self.app.post('/register-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(email="test@mail.com", lock_id=123))
+        self.assertEqual(401, response.status_code)
 
 if __name__ == '__main__':
     unittest.main()
