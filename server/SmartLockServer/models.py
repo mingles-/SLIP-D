@@ -27,7 +27,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True)
     first_name = db.Column(db.String(255), unique=True)
     last_name = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
+    password = db.Column(db.String(255),)
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=role_user,
