@@ -10,7 +10,7 @@ class SmartLockTestCase(BaseTest):
 
     def setUp(self):
         super(SmartLockTestCase, self).setUp()
-        self.app.post('/register', data=dict(email="test@mail.com", password="python"))
+        self.app.post('/register-user', data=dict(email="test@mail.com", password="python"))
         self.app.post('/register-lock/123', headers=self.auth_header("test@mail.com", "python"))
         SmartLockServer.db.session.commit()
 
@@ -19,7 +19,7 @@ class SmartLockTestCase(BaseTest):
 
     def test_register_lock_success(self):
         """Register a lock to a new user"""
-        response = self.app.post('/register', data=dict(email="test2@mail.com", password="python"))
+        response = self.app.post('/register-user', data=dict(email="test2@mail.com", password="python"))
         self.assertEqual(201, response.status_code)
         response = self.app.post('/register-lock/124', headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(200, response.status_code)

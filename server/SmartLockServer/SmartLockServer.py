@@ -113,7 +113,6 @@ class OpenLock(Resource):
     def put(self, lock_id):
 
         if lock_id is not None:
-
             email = request.authorization.username
             database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
 
@@ -121,10 +120,11 @@ class OpenLock(Resource):
                 if email == database_lock_id.owner:
                     database_lock_id.locked = False
                     db.session.commit()
-                    return 200
+                    return lock_id, 200
 
                 else:
                     return lock_id, 401
+
         return lock_id, 404
 
 
@@ -135,11 +135,21 @@ class CloseLock(Resource):
     decorators = [requires_auth]
 
     def put(self, lock_id):
-        # check if lockid is associated with user in db
-        if lock_id == 123:
-            return "close lock 123", 200
-        else:
-            return "", 403
+
+        if lock_id is not None:
+            email = request.authorization.username
+            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
+
+            if database_lock_id is not None:
+                if email == database_lock_id.owner:
+                    database_lock_id.locked = True
+                    db.session.commit()
+                    return lock_id, 200
+
+                else:
+                    return lock_id, 401
+
+        return lock_id, 404
 
 
 class LockList(Resource):
@@ -155,7 +165,7 @@ class LockList(Resource):
 
 api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(HelloWorld, '/')
-api.add_resource(RegisterUser, '/register')
+api.add_resource(RegisterUser, '/register-user')
 api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
 api.add_resource(LockList, '/lock')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
