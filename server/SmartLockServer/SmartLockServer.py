@@ -6,7 +6,6 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask_restful import Resource
 from flask.ext.security.utils import encrypt_password, verify_password
 from functools import wraps
-import types
 
 
 from flask import request, Response
@@ -75,12 +74,17 @@ class RegisterUser(Resource):
     """
 
     def post(self):
+
         email = request.form['email']
         password = encrypt_password(request.form['password'])
-        models.user_datastore.create_user(email=email, password=password)
-        db.session.commit()
-        new_user = models.User.query.filter_by(email=email)
-        return new_user[0].email, 201
+
+        if not is_user_in_db(email):
+            models.user_datastore.create_user(email=email, password=password)
+            db.session.commit()
+            new_user = models.User.query.filter_by(email=email)
+            return new_user[0].email, 201
+
+        return email, 406
 
 
 class RegisterLock(Resource):
@@ -134,6 +138,15 @@ class LockList(Resource):
         for lock in locks:
             lock_json.append({"id": lock.id, "locked": lock.locked})
         return lock_json
+
+
+def is_user_in_db(user):
+    email = models.User.query.filter_by(email=user)
+    if email.count() > 0:
+        return True
+    else:
+        return False
+
 
 
 @requires_auth
