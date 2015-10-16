@@ -35,6 +35,15 @@ class SmartLockTestCase(BaseTest):
         response = self.app.get('/protected-resource', headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(200, response.status_code)
 
+    def test_register_fail(self):
+        """Fail to provide Registration info - no password"""
+        response = self.app.post('/register-user', data=dict(email="test2@mail.com"))
+        self.assertEqual(400, response.status_code)
+
+    def test_already_registered(self):
+        """Fail to provide Registration info"""
+        response = self.app.post('/register-user', data=dict(email="test@mail.com", password="python"))
+        self.assertEqual(406, response.status_code)
 
 
 if __name__ == '__main__':
