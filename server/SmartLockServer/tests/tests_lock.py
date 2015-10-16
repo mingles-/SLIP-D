@@ -24,7 +24,7 @@ class SmartLockTestCase(BaseTest):
         response = self.app.post('/register-lock/124', headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(200, response.status_code)
         response = self.app.post('/register-lock/124', headers=self.auth_header("test2@mail.com", "python"))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(406, response.status_code)
 
     def test_register_registered_lock(self):
         """Attempt to register an already registered lock"""
@@ -33,7 +33,7 @@ class SmartLockTestCase(BaseTest):
         response = self.app.post('/register-lock/124', headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(200, response.status_code)
         response = self.app.post('/register-lock/124', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(406, response.status_code)
 
     def test_open_lock_good(self):
         """Ensure that good user credentials are accepted with the open lock """

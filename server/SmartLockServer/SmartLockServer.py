@@ -100,7 +100,7 @@ class RegisterLock(Resource):
         database_lock_id = models.Lock.query.filter_by(id=lock_id)
 
         if database_lock_id.count() > 0:
-            return lock_id, 401
+            return lock_id, 406
         else:
             this = models.Lock(id=lock_id, owner=email, locked=True)
             db.session.add(this)
