@@ -24,16 +24,6 @@ db = SQLAlchemy(app)
 
 import models
 
-
-def api_route(self, *args, **kwargs):
-    def wrapper(cls):
-        self.add_resource(cls, *args, **kwargs)
-        return cls
-    return wrapper
-
-api.route = types.MethodType(api_route, api)
-
-
 def check_auth(email, password):
     """
     This function is called to check if a username & password combination is valid.
@@ -79,7 +69,7 @@ class ProtectedResource(Resource):
         return "Hello", 200
 
 
-class Register(Resource):
+class RegisterUser(Resource):
     """
     This endpoint registers a user's email and password, encrypting the latter in the database.
     """
@@ -90,25 +80,25 @@ class Register(Resource):
         models.user_datastore.create_user(email=email, password=password)
         db.session.commit()
         new_user = models.User.query.filter_by(email=email)
-
         return new_user[0].email, 201
 
 
 class RegisterLock(Resource):
+    """
+    This endpoint registers a lock, associating it with the user's password.
+    """
 
     decorators = [requires_auth]
 
-    def post(self):
-        
-        email = request.form['email']
-        lock_id = request.form['lock_id']
+    def post(self, lock_id):
 
+        email = request.authorization.username
         database_lock_id = models.Lock.query.filter_by(id=lock_id)
 
         if database_lock_id.count() > 0:
             return lock_id, 401
         else:
-            this = models.Lock(id=lock_id, owner=email)
+            this = models.Lock(id=lock_id, owner=email, locked=True)
             db.session.add(this)
             db.session.commit()
             return lock_id, 200
@@ -157,8 +147,8 @@ class LockList(Resource):
 
 api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(HelloWorld, '/')
-api.add_resource(Register, '/register')
-api.add_resource(RegisterLock, '/register-lock')
+api.add_resource(RegisterUser, '/register')
+api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
 api.add_resource(LockList, '/lock')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')

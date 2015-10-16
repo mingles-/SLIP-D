@@ -57,9 +57,9 @@ class SmartLockTestCase(BaseTest):
 
     def test_register_lock_success(self):
         """Register a lock to a user"""
-        response = self.app.post('/register-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(email="test@mail.com", lock_id=123))
+        response = self.app.post('/register-lock/123', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(200, response.status_code)
-        response = self.app.post('/register-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(email="test@mail.com", lock_id=123))
+        response = self.app.post('/register-lock/123', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(401, response.status_code)
 
 if __name__ == '__main__':
