@@ -3,7 +3,7 @@ import unittest
 import models
 from tests.base_test import BaseTest
 
-__author__ = 'test@mail.com'
+__author__ = 'mingles'
 
 
 class SmartLockTestCase(BaseTest):
@@ -28,13 +28,15 @@ class SmartLockTestCase(BaseTest):
 
     def test_open_lock_good(self):
         """Ensure that good user credentials are accepted with the open lock """
+        response = self.app.post('/register-lock/123', headers=self.auth_header("test@mail.com", "python"))
+        self.assertEqual(200, response.status_code)
         response = self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(200, response.status_code)
 
     def test_open_lock_bad_id(self):
-        """Ensure that good user credentials fail with the an unassociated lock"""
+        """Ensure that good user credentials fail with the an non existing lock"""
         response = self.app.put('/open/124', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_open_lock_nae_lock(self):
         """Ensure that good user credentials are not accepted without a lock"""

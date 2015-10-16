@@ -112,12 +112,20 @@ class OpenLock(Resource):
 
     def put(self, lock_id):
 
-        if lock_id == 123:
-            return 200
-        elif lock_id is None:
-            return lock_id, 404
-        else:
-            return lock_id, 401
+        if lock_id is not None:
+
+            email = request.authorization.username
+            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
+
+            if database_lock_id is not None:
+                if email == database_lock_id.owner:
+                    database_lock_id.locked = False
+                    db.session.commit()
+                    return 200
+
+                else:
+                    return lock_id, 401
+        return lock_id, 404
 
 
 class CloseLock(Resource):
