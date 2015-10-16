@@ -3,7 +3,7 @@ from os import environ
 from flask import Flask, jsonify, make_response, request
 from flask.ext import restful
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask_restful import Resource, Api
+from flask_restful import Resource
 from flask.ext.security.utils import encrypt_password, verify_password
 from functools import wraps
 import types
@@ -16,12 +16,13 @@ app = Flask(__name__)
 
 
 app.config.from_object(environ['APP_SETTINGS'])
-
-
+app.config['SECURITY_PASSWORD_HASH'] = environ.get('SECURITY_PASSWORD_HASH')
+app.config['SECURITY_PASSWORD_SALT'] = environ.get('SECURITY_PASSWORD_SALT')
 
 api = restful.Api(app)
 db = SQLAlchemy(app)
-# auth = HTTPBasicAuth()
+
+import models
 
 
 def api_route(self, *args, **kwargs):
@@ -31,9 +32,6 @@ def api_route(self, *args, **kwargs):
     return wrapper
 
 api.route = types.MethodType(api_route, api)
-
-import models
-
 
 
 def check_auth(email, password):
@@ -72,18 +70,19 @@ class HelloWorld(Resource):
         return {'hello': 'world'}
 
 
-
 class ProtectedResource(Resource):
     """
     This endpoint is protected by basic auth and is only used for testing
     """
     decorators = [requires_auth]
-
     def get(self):
         return "Hello", 200
 
 
 class Register(Resource):
+    """
+    This endpoint registers a user's email and password, encrypting the latter in the database.
+    """
 
     def post(self):
         email = request.form['email']
@@ -95,19 +94,23 @@ class Register(Resource):
         return new_user[0].email, 201
 
 
-class OpenLock(restful.Resource):
+
+
+class OpenLock(Resource):
     """
     This endpoint opens the lock if lockID and associated user is consistent within the database
     """
     decorators = [requires_auth]
 
     def put(self, lock_id):
-        if lock_id == "123":
-            return lock_id, 200
-        elif lock_id == "":
-            return 404
+
+        if lock_id == 123:
+            return 200
+        elif lock_id is None:
+            return lock_id, 404
         else:
-            return "", 401
+            return lock_id, 401
+
 
 class CloseLock(Resource):
     """
