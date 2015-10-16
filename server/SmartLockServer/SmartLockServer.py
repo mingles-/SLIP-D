@@ -112,20 +112,7 @@ class OpenLock(Resource):
 
     def put(self, lock_id):
 
-        if lock_id is not None:
-            email = request.authorization.username
-            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
-
-            if database_lock_id is not None:
-                if email == database_lock_id.owner:
-                    database_lock_id.locked = False
-                    db.session.commit()
-                    return lock_id, 200
-
-                else:
-                    return lock_id, 401
-
-        return lock_id, 404
+        return change_lock_state(lock_id, False)
 
 
 class CloseLock(Resource):
@@ -136,20 +123,7 @@ class CloseLock(Resource):
 
     def put(self, lock_id):
 
-        if lock_id is not None:
-            email = request.authorization.username
-            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
-
-            if database_lock_id is not None:
-                if email == database_lock_id.owner:
-                    database_lock_id.locked = True
-                    db.session.commit()
-                    return lock_id, 200
-
-                else:
-                    return lock_id, 401
-
-        return lock_id, 404
+        return change_lock_state(lock_id, True)
 
 
 class LockList(Resource):
@@ -162,12 +136,32 @@ class LockList(Resource):
         return lock_json
 
 
+@requires_auth
+def change_lock_state(lock_id, new_state):
 
-api.add_resource(ProtectedResource, '/protected-resource')
+    if lock_id is not None:
+        email = request.authorization.username
+        database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
+
+        if database_lock_id is not None:
+            if email == database_lock_id.owner:
+                database_lock_id.locked = new_state
+                db.session.commit()
+                return lock_id, 200
+            else:
+                return lock_id, 401
+
+    return lock_id, 404
+
+
+# testing endpoints
 api.add_resource(HelloWorld, '/')
+api.add_resource(ProtectedResource, '/protected-resource')
+api.add_resource(LockList, '/lock')
+
+# actual endpoints
 api.add_resource(RegisterUser, '/register-user')
 api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
-api.add_resource(LockList, '/lock')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
 
