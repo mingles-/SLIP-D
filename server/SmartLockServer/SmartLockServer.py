@@ -35,8 +35,8 @@ api.route = types.MethodType(api_route, api)
 
 
 def check_auth(email, password):
-    """This function is called to check if a username /
-    password combination is valid.
+    """
+    This function is called to check if a username & password combination is valid.
     """
     users_with_that_email = models.User.query.filter_by(email=email)
     db_password = ""
@@ -94,6 +94,24 @@ class Register(Resource):
         return new_user[0].email, 201
 
 
+class RegisterLock(Resource):
+
+    decorators = [requires_auth]
+
+    def post(self):
+        
+        email = request.form['email']
+        lock_id = request.form['lock_id']
+
+        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+
+        if database_lock_id.count() > 0:
+            return lock_id, 401
+        else:
+            this = models.Lock(id=lock_id, owner=email)
+            db.session.add(this)
+            db.session.commit()
+            return lock_id, 200
 
 
 class OpenLock(Resource):
@@ -140,6 +158,7 @@ class LockList(Resource):
 api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(HelloWorld, '/')
 api.add_resource(Register, '/register')
+api.add_resource(RegisterLock, '/register-lock')
 api.add_resource(LockList, '/lock')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')

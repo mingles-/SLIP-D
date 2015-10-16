@@ -36,6 +36,7 @@ class User(db.Model, UserMixin):
 
 class Lock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    owner = db.Column(db.String(255), unique=True)
     locked = db.Column(db.Boolean())
 
 
