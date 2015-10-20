@@ -15,7 +15,6 @@ app = Flask(__name__)
 
 
 app.config.from_object(environ['APP_SETTINGS'])
-app.config['SECURITY_PASSWORD_HASH'] = environ.get('SECURITY_PASSWORD_HASH')
 app.config['SECURITY_PASSWORD_SALT'] = environ.get('SECURITY_PASSWORD_SALT')
 
 api = restful.Api(app)

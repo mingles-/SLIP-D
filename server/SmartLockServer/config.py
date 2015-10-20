@@ -9,6 +9,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    SECURITY_PASSWORD_HASH = 'sha512_crypt'
 
 
 class ProductionConfig(Config):
@@ -27,3 +28,4 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    SECURITY_PASSWORD_HASH = 'plaintext'
