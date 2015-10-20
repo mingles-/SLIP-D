@@ -1,0 +1,18 @@
+{% extends 'base.htm' %}
+{% block content %}
+<div id="jumbo" class="jumbotron">
+    <div class="container text-center">
+        <h1>{{ app_name }}</h1>
+        <p>Insert catchy slogan here.</p>
+        {% if session.username and session.password  %}
+        <p><a class="btn btn-primary btn-lg" href="/profile" role="button">Get Started</a></p>
+        {% else %}
+        <p><a class="btn btn-primary btn-lg" href="/register" role="button">Get Started</a></p>
+        {% endif %}
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+    </div>
+</div>
+{% endblock %}
