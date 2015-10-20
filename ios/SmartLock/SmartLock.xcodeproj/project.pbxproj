@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D49D0E7A0989A05CDFD622A /* TransportSessionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D49D2A7F9EEA177BC011848 /* TransportSessionTest.swift */; };
+		2D49D72DC912AD4B5FC34E54 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D49DD154EFDBE5610C23E94 /* Settings.swift */; };
+		A547BAE5A991878BA6B87A74 /* Pods_SmartLockTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A3A67E3800C70E6963EA75 /* Pods_SmartLockTests.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		B90108F51BBC43FC0000023E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90108F41BBC43FC0000023E /* AppDelegate.swift */; };
 		B90108F71BBC43FC0000023E /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90108F61BBC43FC0000023E /* FirstViewController.swift */; };
 		B90108F91BBC43FC0000023E /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90108F81BBC43FC0000023E /* SecondViewController.swift */; };
@@ -15,6 +18,10 @@
 		B90109011BBC43FC0000023E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B90108FF1BBC43FC0000023E /* LaunchScreen.storyboard */; };
 		B901090C1BBC43FC0000023E /* SmartLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B901090B1BBC43FC0000023E /* SmartLockTests.swift */; };
 		B90109171BBC43FD0000023E /* SmartLockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90109161BBC43FD0000023E /* SmartLockUITests.swift */; };
+		B93B9BDF1BD6C2B80061D303 /* FakeTransportSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93B9BDB1BD6C2B80061D303 /* FakeTransportSession.swift */; settings = {ASSET_TAGS = (); }; };
+		B93B9BE01BD6C2B80061D303 /* TransportSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93B9BDC1BD6C2B80061D303 /* TransportSession.swift */; settings = {ASSET_TAGS = (); }; };
+		B93B9BE11BD6C2B80061D303 /* TransportSessionProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93B9BDD1BD6C2B80061D303 /* TransportSessionProtocol.swift */; settings = {ASSET_TAGS = (); }; };
+		D117162AF03B889FE02B9E44 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0732EF14C935C681C20E8B7 /* Pods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +42,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0BB20BCB9F090BDBFB18220F /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		2880BC66C48BB45E05DA3084 /* Pods-SmartLockTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SmartLockTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SmartLockTests/Pods-SmartLockTests.debug.xcconfig"; sourceTree = "<group>"; };
+		2D49D2A7F9EEA177BC011848 /* TransportSessionTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransportSessionTest.swift; sourceTree = "<group>"; };
+		2D49DD154EFDBE5610C23E94 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		311C282A2CBF45D022523F42 /* Pods-SmartLockTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SmartLockTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SmartLockTests/Pods-SmartLockTests.release.xcconfig"; sourceTree = "<group>"; };
+		9CF4C4F8927C408B801F1101 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		B0732EF14C935C681C20E8B7 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B90108F11BBC43FC0000023E /* SmartLock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartLock.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B90108F41BBC43FC0000023E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B90108F61BBC43FC0000023E /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
@@ -49,6 +63,10 @@
 		B90109121BBC43FD0000023E /* SmartLockUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartLockUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B90109161BBC43FD0000023E /* SmartLockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartLockUITests.swift; sourceTree = "<group>"; };
 		B90109181BBC43FD0000023E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B93B9BDB1BD6C2B80061D303 /* FakeTransportSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FakeTransportSession.swift; sourceTree = "<group>"; };
+		B93B9BDC1BD6C2B80061D303 /* TransportSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransportSession.swift; sourceTree = "<group>"; };
+		B93B9BDD1BD6C2B80061D303 /* TransportSessionProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransportSessionProtocol.swift; sourceTree = "<group>"; };
+		B9A3A67E3800C70E6963EA75 /* Pods_SmartLockTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SmartLockTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D117162AF03B889FE02B9E44 /* Pods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +82,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A547BAE5A991878BA6B87A74 /* Pods_SmartLockTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +96,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0DA20438E091F1A106B80680 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B0732EF14C935C681C20E8B7 /* Pods.framework */,
+				B9A3A67E3800C70E6963EA75 /* Pods_SmartLockTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		591E3B6E90010C7DF25E18E5 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9CF4C4F8927C408B801F1101 /* Pods.debug.xcconfig */,
+				0BB20BCB9F090BDBFB18220F /* Pods.release.xcconfig */,
+				2880BC66C48BB45E05DA3084 /* Pods-SmartLockTests.debug.xcconfig */,
+				311C282A2CBF45D022523F42 /* Pods-SmartLockTests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		B90108E81BBC43FC0000023E = {
 			isa = PBXGroup;
 			children = (
@@ -83,6 +123,8 @@
 				B901090A1BBC43FC0000023E /* SmartLockTests */,
 				B90109151BBC43FD0000023E /* SmartLockUITests */,
 				B90108F21BBC43FC0000023E /* Products */,
+				591E3B6E90010C7DF25E18E5 /* Pods */,
+				0DA20438E091F1A106B80680 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -99,6 +141,7 @@
 		B90108F31BBC43FC0000023E /* SmartLock */ = {
 			isa = PBXGroup;
 			children = (
+				B93B9BE21BD6C2C40061D303 /* Transport */,
 				B90108F41BBC43FC0000023E /* AppDelegate.swift */,
 				B90108F61BBC43FC0000023E /* FirstViewController.swift */,
 				B90108F81BBC43FC0000023E /* SecondViewController.swift */,
@@ -106,6 +149,7 @@
 				B90108FD1BBC43FC0000023E /* Assets.xcassets */,
 				B90108FF1BBC43FC0000023E /* LaunchScreen.storyboard */,
 				B90109021BBC43FC0000023E /* Info.plist */,
+				2D49DD154EFDBE5610C23E94 /* Settings.swift */,
 			);
 			path = SmartLock;
 			sourceTree = "<group>";
@@ -115,6 +159,7 @@
 			children = (
 				B901090B1BBC43FC0000023E /* SmartLockTests.swift */,
 				B901090D1BBC43FC0000023E /* Info.plist */,
+				2D49D2A7F9EEA177BC011848 /* TransportSessionTest.swift */,
 			);
 			path = SmartLockTests;
 			sourceTree = "<group>";
@@ -128,6 +173,16 @@
 			path = SmartLockUITests;
 			sourceTree = "<group>";
 		};
+		B93B9BE21BD6C2C40061D303 /* Transport */ = {
+			isa = PBXGroup;
+			children = (
+				B93B9BDB1BD6C2B80061D303 /* FakeTransportSession.swift */,
+				B93B9BDC1BD6C2B80061D303 /* TransportSession.swift */,
+				B93B9BDD1BD6C2B80061D303 /* TransportSessionProtocol.swift */,
+			);
+			name = Transport;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -135,9 +190,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B901091B1BBC43FD0000023E /* Build configuration list for PBXNativeTarget "SmartLock" */;
 			buildPhases = (
+				67E93FEC460BF67E7CFEA87B /* Check Pods Manifest.lock */,
 				B90108ED1BBC43FC0000023E /* Sources */,
 				B90108EE1BBC43FC0000023E /* Frameworks */,
 				B90108EF1BBC43FC0000023E /* Resources */,
+				3DCE1D9A165B5483DAC59AA1 /* Embed Pods Frameworks */,
+				BAF14E584A76FA77DF017379 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -152,9 +210,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B901091E1BBC43FD0000023E /* Build configuration list for PBXNativeTarget "SmartLockTests" */;
 			buildPhases = (
+				B89E45A7F4E61CC1072416BA /* Check Pods Manifest.lock */,
 				B90109031BBC43FC0000023E /* Sources */,
 				B90109041BBC43FC0000023E /* Frameworks */,
 				B90109051BBC43FC0000023E /* Resources */,
+				7B304312BFF2CDA5584600BB /* Embed Pods Frameworks */,
+				6798D83B0FE9EEE30832FE99 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -190,6 +251,7 @@
 		B90108E91BBC43FC0000023E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Sam Davies";
 				TargetAttributes = {
@@ -253,6 +315,99 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		3DCE1D9A165B5483DAC59AA1 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		6798D83B0FE9EEE30832FE99 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SmartLockTests/Pods-SmartLockTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		67E93FEC460BF67E7CFEA87B /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		7B304312BFF2CDA5584600BB /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SmartLockTests/Pods-SmartLockTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B89E45A7F4E61CC1072416BA /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		BAF14E584A76FA77DF017379 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		B90108ED1BBC43FC0000023E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -260,7 +415,11 @@
 			files = (
 				B90108F91BBC43FC0000023E /* SecondViewController.swift in Sources */,
 				B90108F51BBC43FC0000023E /* AppDelegate.swift in Sources */,
+				B93B9BDF1BD6C2B80061D303 /* FakeTransportSession.swift in Sources */,
+				B93B9BE01BD6C2B80061D303 /* TransportSession.swift in Sources */,
+				B93B9BE11BD6C2B80061D303 /* TransportSessionProtocol.swift in Sources */,
 				B90108F71BBC43FC0000023E /* FirstViewController.swift in Sources */,
+				2D49D72DC912AD4B5FC34E54 /* Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +428,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B901090C1BBC43FC0000023E /* SmartLockTests.swift in Sources */,
+				2D49D0E7A0989A05CDFD622A /* TransportSessionTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,6 +558,7 @@
 		};
 		B901091C1BBC43FD0000023E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9CF4C4F8927C408B801F1101 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = SmartLock/Info.plist;
@@ -409,6 +570,7 @@
 		};
 		B901091D1BBC43FD0000023E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BB20BCB9F090BDBFB18220F /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = SmartLock/Info.plist;
@@ -420,6 +582,7 @@
 		};
 		B901091F1BBC43FD0000023E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2880BC66C48BB45E05DA3084 /* Pods-SmartLockTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = SmartLockTests/Info.plist;
@@ -432,6 +595,7 @@
 		};
 		B90109201BBC43FD0000023E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 311C282A2CBF45D022523F42 /* Pods-SmartLockTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = SmartLockTests/Info.plist;
@@ -485,6 +649,7 @@
 				B901091D1BBC43FD0000023E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B901091E1BBC43FD0000023E /* Build configuration list for PBXNativeTarget "SmartLockTests" */ = {
 			isa = XCConfigurationList;
@@ -493,6 +658,7 @@
 				B90109201BBC43FD0000023E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B90109211BBC43FD0000023E /* Build configuration list for PBXNativeTarget "SmartLockUITests" */ = {
 			isa = XCConfigurationList;
@@ -501,6 +667,7 @@
 				B90109231BBC43FD0000023E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
