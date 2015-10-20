@@ -22,8 +22,8 @@ class TransportSessionTest: XCTestCase {
         // Put setup code here. This method is called before the invocation of each test method in the class.
         self.expectation = expectationWithDescription("Swift Expectations")
 
-//        LocksmithThing.deleteToken()
-//        LocksmithThing.saveUserPass("tester@mail.com", pass: "python")
+        LocksmithSmartLock.deleteUserPass()
+        LocksmithSmartLock.saveUserPass("tester@mail.com", pass: "python")
     }
 
     override func tearDown() {
@@ -32,9 +32,8 @@ class TransportSessionTest: XCTestCase {
     }
 
     func testAPI() {
-
         let session = TransportSession()
-        session.url = "/"
+        session.url = ""
         session.method = Alamofire.Method.GET
         session.returnsMultiJson = true
 
@@ -42,6 +41,21 @@ class TransportSessionTest: XCTestCase {
         session.basicRequestPromise().then {
             (json: JSON) -> Void in
             XCTAssertEqual(json["hello"].string!, "world")
+            self.expectation.fulfill()
+        }
+        waitForExpectationsWithTimeout(5.0, handler: nil)
+    }
+
+    func testBasicAuth() {
+        let session = TransportSession()
+        session.url = "protected-resource"
+        session.method = Alamofire.Method.GET
+        session.returnsMultiJson = true
+
+        // return the promise with an array of objects
+        session.basicRequestPromise().then {
+            (json: JSON) -> Void in
+            XCTAssertEqual(json.string!, "Hello")
             self.expectation.fulfill()
         }
         waitForExpectationsWithTimeout(5.0, handler: nil)
