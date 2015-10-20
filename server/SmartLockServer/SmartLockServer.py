@@ -1,26 +1,22 @@
+from functools import wraps
 from os import environ
 
-from flask import Flask, jsonify, make_response, request
-from flask.ext import restful
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask_restful import Resource
-from flask.ext.security.utils import encrypt_password, verify_password
-from functools import wraps
-
-
+from flask import Flask
 from flask import request, Response
-
+from flask.ext.security.utils import encrypt_password, verify_password
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask_restful import Resource, Api
 
 app = Flask(__name__)
-
 
 app.config.from_object(environ['APP_SETTINGS'])
 app.config['SECURITY_PASSWORD_SALT'] = environ.get('SECURITY_PASSWORD_SALT')
 
-api = restful.Api(app)
+api = Api(app)
 db = SQLAlchemy(app)
 
 import models
+
 
 def check_auth(email, password):
     """
@@ -37,9 +33,9 @@ def check_auth(email, password):
 def authenticate():
     """Sends a 401 response that enables basic auth"""
     return Response(
-    'Could not verify your access level for that URL.\n'
-    'You have to login with proper credentials', 401,
-    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+        'Could not verify your access level for that URL.\n'
+        'You have to login with proper credentials', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
 
 def requires_auth(f):
@@ -49,11 +45,11 @@ def requires_auth(f):
         if not auth or not check_auth(auth.username, auth.password):
             return authenticate()
         return f(*args, **kwargs)
+
     return decorated
 
 
 class HelloWorld(Resource):
-
     def get(self):
         return {'hello': 'world'}
 
@@ -63,6 +59,7 @@ class ProtectedResource(Resource):
     This endpoint is protected by basic auth and is only used for testing
     """
     decorators = [requires_auth]
+
     def get(self):
         return "Hello", 200
 
@@ -71,9 +68,7 @@ class RegisterUser(Resource):
     """
     This endpoint registers a user's email and password, encrypting the latter in the database.
     """
-
     def post(self):
-
         email = request.form['email']
         password = encrypt_password(request.form['password'])
 
@@ -114,7 +109,6 @@ class OpenLock(Resource):
     decorators = [requires_auth]
 
     def put(self, lock_id):
-
         return change_lock_state(lock_id, False)
 
 
@@ -125,12 +119,10 @@ class CloseLock(Resource):
     decorators = [requires_auth]
 
     def put(self, lock_id):
-
         return change_lock_state(lock_id, True)
 
 
 class LockList(Resource):
-
     def get(self):
         locks = db.session.query(models.Lock).all()
         lock_json = []
@@ -147,10 +139,8 @@ def is_user_in_db(user):
         return False
 
 
-
 @requires_auth
 def change_lock_state(lock_id, new_state):
-
     if lock_id is not None:
         email = request.authorization.username
         database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
@@ -176,7 +166,6 @@ api.add_resource(RegisterUser, '/register-user')
 api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
-
 
 if __name__ == '__main__':
     app.run(debug=True)

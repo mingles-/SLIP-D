@@ -25,7 +25,6 @@ class BaseTest(unittest.TestCase):
         os.close(self.db_fd)
         os.unlink(SmartLockServer.app.config['DATABASE'])
 
-
     def auth_header(self, username, password):
         """
         :param username: the user to log in's username
