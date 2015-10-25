@@ -6,11 +6,12 @@ from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
+import config
 
 
 app = Flask(__name__)
 
-app.config.from_object(environ['APP_SETTINGS'])
+app.config.from_object(config.Config)
 app.config['SECURITY_PASSWORD_SALT'] = environ.get('SECURITY_PASSWORD_SALT')
 
 api = Api(app)
