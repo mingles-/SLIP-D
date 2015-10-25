@@ -1,0 +1,1 @@
+from SmartLockServer import app as application
