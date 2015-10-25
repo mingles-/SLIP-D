@@ -4,8 +4,9 @@ from os import environ
 from flask import Flask
 from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
+
 
 app = Flask(__name__)
 
