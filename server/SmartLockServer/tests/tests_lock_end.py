@@ -47,7 +47,7 @@ class SmartLockTestCase(BaseTest):
     def test_lock_not_owned(self):
         """check lock which isn't owned is rejected"""
         response = self.app.get('/check/321', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(403, response.status_code)
 
 
 if __name__ == '__main__':

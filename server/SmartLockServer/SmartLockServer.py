@@ -146,12 +146,13 @@ class LockCheck(Resource):
             if database_lock_id is not None:
                 if email == database_lock_id.owner:
                     lock_state = database_lock_id.locked
-                    if lock_state == False:
+
+                    if lock_state is False:
                         return lock_state, 200
                     else:
                         return lock_state, 423
                 else:
-                    return lock_state, 401
+                    return lock_state, 403
 
         return lock_state, 404
 
