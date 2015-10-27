@@ -56,7 +56,7 @@ class ProtectedResource(Resource):
     decorators = [requires_auth]
 
     def get(self):
-        return "Hello", 200
+        return {"message": "Hello"}, 200
 
 
 class RegisterUser(Resource):
