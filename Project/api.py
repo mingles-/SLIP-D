@@ -1,23 +1,16 @@
 from functools import wraps
-from os import environ
 
-from flask import Flask
 from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
-from flask_sqlalchemy import SQLAlchemy
-from flask_restful import Resource, Api
-import config
+from flask_restful import Resource
 
+from Project import models
+from Project.app import db, app
+from Project.auth import user_datastore
+from flask_restful import Api
 
-app = Flask(__name__)
-
-app.config.from_object(config.Config)
-app.config['SECURITY_PASSWORD_SALT'] = environ.get('SECURITY_PASSWORD_SALT')
 
 api = Api(app)
-db = SQLAlchemy(app)
-
-import models
 
 
 def check_auth(email, password):
@@ -76,7 +69,7 @@ class RegisterUser(Resource):
         password = encrypt_password(request.form['password'])
 
         if not is_user_in_db(email):
-            models.user_datastore.create_user(email=email, password=password)
+            user_datastore.create_user(email=email, password=password)
             db.session.commit()
             new_user = models.User.query.filter_by(email=email)
             return new_user[0].email, 201
@@ -195,6 +188,3 @@ api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>'
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
 api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
-
-if __name__ == '__main__':
-    app.run(debug=True)

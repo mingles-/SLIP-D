@@ -1,7 +1,6 @@
-import SmartLockServer
 import unittest
-import models
-from tests.base_test import BaseTest
+
+from Project.tests.base_test import BaseTest
 
 __author__ = 'mingles'
 
@@ -11,7 +10,6 @@ class SmartLockTestCase(BaseTest):
     def setUp(self):
         super(SmartLockTestCase, self).setUp()
         self.app.post('/register-user', data=dict(email="test@mail.com", password="python"))
-        SmartLockServer.db.session.commit()
 
     def tearDown(self):
         super(SmartLockTestCase, self).tearDown()

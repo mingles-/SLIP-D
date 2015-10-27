@@ -1,9 +1,10 @@
 import os
-import SmartLockServer
 import unittest
 import tempfile
-import models
 from base64 import b64encode
+
+from Project.main import app, db
+from Project.main import User, Lock, Role, role_user, user_lock
 
 __author__ = 'mingles'
 
@@ -11,19 +12,19 @@ __author__ = 'mingles'
 class BaseTest(unittest.TestCase):
 
     def setUp(self):
-        self.db_fd, SmartLockServer.app.config['DATABASE'] = tempfile.mkstemp()
-        SmartLockServer.app.config['TESTING'] = True
-        self.app = SmartLockServer.app.test_client()
-        models.User.query.delete()
-        models.Lock.query.delete()
-        models.Role.query.delete()
-        models.role_user.delete()
-        models.user_lock.delete()
-        SmartLockServer.db.session.commit()
+        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+        User.query.delete()
+        Lock.query.delete()
+        Role.query.delete()
+        role_user.delete()
+        user_lock.delete()
+        db.session.commit()
 
     def tearDown(self):
         os.close(self.db_fd)
-        os.unlink(SmartLockServer.app.config['DATABASE'])
+        os.unlink(app.config['DATABASE'])
 
     def auth_header(self, username, password):
         """

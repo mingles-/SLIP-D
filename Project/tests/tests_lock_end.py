@@ -1,7 +1,7 @@
-import SmartLockServer
+
 import unittest
-import models
-from tests.base_test import BaseTest
+
+from Project.tests.base_test import BaseTest
 
 __author__ = 'mingles'
 

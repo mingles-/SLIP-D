@@ -1,7 +1,7 @@
-import SmartLockServer
 import unittest
-import models
-from tests.base_test import BaseTest
+
+from Project.models import Lock
+from Project.tests.base_test import BaseTest
 
 __author__ = 'mingles'
 
@@ -12,7 +12,6 @@ class SmartLockTestCase(BaseTest):
         super(SmartLockTestCase, self).setUp()
         self.app.post('/register-user', data=dict(email="test@mail.com", password="python"))
         self.app.post('/register-lock/123', headers=self.auth_header("test@mail.com", "python"))
-        SmartLockServer.db.session.commit()
 
     def tearDown(self):
         super(SmartLockTestCase, self).tearDown()
@@ -59,10 +58,10 @@ class SmartLockTestCase(BaseTest):
 
     def test_open_and_close_lock(self):
         self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
-        database_lock_id = models.Lock.query.filter_by(id=123).first()
+        database_lock_id = Lock.query.filter_by(id=123).first()
         self.assertEqual(database_lock_id.locked, False)
         self.app.put('/close/123', headers=self.auth_header("test@mail.com", "python"))
-        database_lock_id = models.Lock.query.filter_by(id=123).first()
+        database_lock_id = Lock.query.filter_by(id=123).first()
         self.assertEqual(database_lock_id.locked, True)
 
 

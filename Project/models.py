@@ -1,9 +1,8 @@
 from flask.ext.security import RoleMixin, UserMixin
-from flask.ext.security import SQLAlchemyUserDatastore, Security
 
 __author__ = 'mingles'
 
-from SmartLockServer import db, app
+from app import db
 
 # Define models
 role_user = db.Table('role_user',
@@ -39,7 +38,3 @@ class Lock(db.Model):
     owner = db.Column(db.String(255), unique=True)
     locked = db.Column(db.Boolean())
 
-
-# Setup Flask-Security
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
