@@ -85,8 +85,18 @@ class HasLock(Resource):
         database_lock_id = models.Lock.query.filter_by(owner=email)
 
         if database_lock_id.count() > 0:
-            return {'lock_id': database_lock_id[0].id}, 200
+
+            lock_id = database_lock_id[0].id
+            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
+            lock_state = database_lock_id.locked
+
+            print lock_state
+
+
+            return {'lock_id': lock_id, 'is_locked': lock_state }, 200
+
         else:
+
             return {'lock_id': None }, 401
 
 
