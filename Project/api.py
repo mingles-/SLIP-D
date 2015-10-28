@@ -93,11 +93,11 @@ class HasLock(Resource):
             print lock_state
 
 
-            return {'lock_id': lock_id, 'is_locked': lock_state }, 200
+            return [{'lock_id': lock_id, 'is_locked': lock_state, }], 200
 
         else:
 
-            return {'lock_id': None }, 401
+            return [], 401
 
 
 
