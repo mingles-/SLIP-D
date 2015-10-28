@@ -76,6 +76,21 @@ class RegisterUser(Resource):
 
         return email, 406
 
+class HasLock(Resource):
+
+    decorators = [requires_auth]
+    def get(self):
+
+        email = request.authorization.username
+        database_lock_id = models.Lock.query.filter_by(owner=email)
+
+        if database_lock_id.count() > 0:
+            return database_lock_id[0].id, 200
+        else:
+            return "-1", 401
+
+
+
 
 class RegisterLock(Resource):
     """
@@ -185,6 +200,7 @@ api.add_resource(LockList, '/lock')
 # actual endpoints
 api.add_resource(RegisterUser, '/register-user')
 api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
+api.add_resource(HasLock, '/has-lock')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
 api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
