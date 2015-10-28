@@ -85,9 +85,9 @@ class HasLock(Resource):
         database_lock_id = models.Lock.query.filter_by(owner=email)
 
         if database_lock_id.count() > 0:
-            return database_lock_id[0].id, 200
+            return {'lock_id': database_lock_id[0].id}, 200
         else:
-            return "-1", 401
+            return {'lock_id': None }, 401
 
 
 
