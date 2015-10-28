@@ -64,7 +64,14 @@ class SmartLockTestCase(BaseTest):
         database_lock_id = Lock.query.filter_by(id=123).first()
         self.assertEqual(database_lock_id.locked, True)
 
+    def test_has_lock(self):
+        response = self.app.get('/has-lock', headers=self.auth_header("test@mail.com", "python"))
+        self.assertEqual(200, response.status_code)
 
+    def test_no_lock(self):
+        self.app.post('/register-user', data=dict(email="test2@mail.com", password="python"))
+        response = self.app.get('/has-lock', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(401, response.status_code)
 
 if __name__ == '__main__':
     unittest.main()
