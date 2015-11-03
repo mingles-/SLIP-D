@@ -46,6 +46,13 @@ class SmartLockTestCaseNew(BaseTest):
         self.assertEqual(406, response.status_code)
         self.assertEqual(json.loads(response.data)['email'], "test@mail.com")
 
+    def test_user_detail(self):
+        """successfully get user info"""
+        response = self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
+        user_id = json.loads(response.data)['id']
+        response = self.app.get('/user/' + str(user_id), headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(json.loads(response.data)['email'], "test2@mail.com")
+
 
 if __name__ == '__main__':
     unittest.main()
