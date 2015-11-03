@@ -2,15 +2,14 @@ from functools import wraps
 
 from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
-from flask_restful import Resource
-
 from Project import models, serialisers
 from Project.app import db, app
 from Project.auth import user_datastore
-from flask_restful import Api, marshal_with
-
+from flask.ext.restplus import Api, Resource, fields, marshal_with
 
 api = Api(app)
+ns = api.namespace('smartlock', description='User operations')
+
 
 
 def check_auth(email, password):
@@ -42,7 +41,7 @@ def requires_auth(f):
 
     return decorated
 
-
+@api.doc(responses={200: 'yas'})
 class HelloWorld(Resource):
     def get(self):
         return {'hello': 'world'}
