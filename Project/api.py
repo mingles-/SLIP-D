@@ -214,6 +214,7 @@ class UserList(Resource):
         users = models.User.query.all()
         return users
 
+    # register user
     @marshal_with(serialisers.user_fields)
     def post(self):
         email = request.form['email']
@@ -227,10 +228,19 @@ class UserList(Resource):
 
         return models.User.query.filter_by(email=email).first(), 406
 
-#
-# class UserDetail(Resource):
-#     def get(self, user_id):
-#
+
+class UserDetail(Resource):
+
+    # return user information
+    @marshal_with(serialisers.user_fields)
+    def get(self, user_id):
+        user_exists = models.User.query.filter_by(id=user_id)
+        if user_exists > 0:
+            return user_exists.first(), 200
+        else:
+            return user_id, 404
+
+
 # class LockList(Resource):
 #     def get(self):
 #     def post(self):
@@ -262,3 +272,4 @@ api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
 
 # new endpoints
 api.add_resource(UserList, '/user')
+api.add_resource(UserDetail, '/user/<int:user_id>')
