@@ -7,7 +7,7 @@ from flask_restful import Resource
 from Project import models, serialisers
 from Project.app import db, app
 from Project.auth import user_datastore
-from flask_restful import Api, fields, marshal_with
+from flask_restful import Api, marshal_with
 
 
 api = Api(app)
@@ -143,7 +143,7 @@ class CloseLock(Resource):
         return change_lock_state(lock_id, True)
 
 
-class LockList(Resource):
+class LockList1(Resource):
     def get(self):
         locks = db.session.query(models.Lock).all()
         lock_json = []
@@ -166,6 +166,7 @@ class LockCheck(Resource):
 
             if database_lock_id is not None:
                 if email == database_lock_id.owner:
+                    print "got here"
                     lock_state = database_lock_id.locked
 
                     if lock_state is False:
@@ -188,17 +189,26 @@ def is_user_in_db(user):
 
 @requires_auth
 def change_lock_state(lock_id, new_state):
+
     if lock_id is not None:
         email = request.authorization.username
-        database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
+        user_id = models.User.query.filter_by(email=email).first().id
+        database_lock_id = models.UserLock.query.filter_by(lock_id=lock_id)
+
 
         if database_lock_id is not None:
-            if email == database_lock_id.owner:
-                database_lock_id.locked = new_state
-                db.session.commit()
-                return lock_id, 200
-            else:
-                return lock_id, 401
+
+            lock_row = models.Lock.query.filter_by(id=lock_id).first()
+            for lock in database_lock_id:
+                if user_id == lock.user_id:
+                    # print database_lock_id.locked
+                    # print new_state
+                    lock_row.locked = new_state
+
+                    db.session.commit()
+                    return lock_id, 200
+                else:
+                    return lock_id, 401
 
     return lock_id, 404
 
@@ -207,8 +217,8 @@ def change_lock_state(lock_id, new_state):
 ######### new shite
 
 class UserList(Resource):
-
     # gets list of users
+    @requires_auth
     @marshal_with(serialisers.user_fields)
     def get(self):
         users = models.User.query.all()
@@ -230,7 +240,7 @@ class UserList(Resource):
 
 
 class UserDetail(Resource):
-
+    decorators = [requires_auth]
     # return user information
     @marshal_with(serialisers.user_fields)
     def get(self, user_id):
@@ -241,12 +251,45 @@ class UserDetail(Resource):
             return user_id, 404
 
 
-# class LockList(Resource):
-#     def get(self):
-#     def post(self):
+class LockList(Resource):
+    decorators = [requires_auth]
+    # gets list of all locks
+    @marshal_with(serialisers.lock_fields)
+    def get(self):
+        locks = models.Lock.query.all()
+        return locks
+
+    # register lock
+    @marshal_with(serialisers.lock_fields)
+    def post(self):
+
+        lock_id = request.form['lock_id']
+        email = request.authorization.username
+        # add in many to many table
+        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+
+        if database_lock_id.count() > 0:
+            return lock_id, 406
+        else:
+            user = models.User.query.filter_by(email=email).first()
+            lock = models.Lock(id=lock_id, locked=True)
+
+
+            user_lock = models.UserLock(is_owner=True)
+            user_lock.lock = lock
+            user.locks.append(user_lock)
+
+
+            db.session.add(lock)
+            db.session.add(user_lock)
+            db.session.commit()
+            lock = models.Lock.query.filter_by(id=lock_id)
+            return lock.first(), 201
+
+
+
+
 #
-# class LockDetail(Resource):
-#     def put(self):
 #
 # class FriendList(Resource):
 #     def get(self):
@@ -260,16 +303,18 @@ class UserDetail(Resource):
 # testing endpoints
 api.add_resource(HelloWorld, '/')
 api.add_resource(ProtectedResource, '/protected-resource')
-api.add_resource(LockList, '/lock')
+# api.add_resource(LockList1, '/lock')
 
 # actual endpoints
 api.add_resource(RegisterUser, '/register-user')
 api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
 api.add_resource(HasLock, '/has-lock')
-api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
-api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
 api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
 
 # new endpoints
 api.add_resource(UserList, '/user')
 api.add_resource(UserDetail, '/user/<int:user_id>')
+api.add_resource(LockList, '/lock')
+api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
+api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
+
