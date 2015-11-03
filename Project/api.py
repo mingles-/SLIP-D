@@ -108,9 +108,6 @@ def change_lock_state(lock_id, new_state):
     return lock_id, 404
 
 
-
-######### new shite
-
 class UserList(Resource):
     # gets list of users
     @requires_auth
@@ -157,7 +154,7 @@ class LockList(Resource):
     # register lock
     @marshal_with(serialisers.lock_fields)
     def post(self):
-
+        lock_name = request.form['lock_name']
         lock_id = request.form['lock_id']
         email = request.authorization.username
         # add in many to many table
@@ -167,7 +164,7 @@ class LockList(Resource):
             return lock_id, 406
         else:
             user = models.User.query.filter_by(email=email).first()
-            lock = models.Lock(id=lock_id, locked=True)
+            lock = models.Lock(id=lock_id, name=lock_name, locked=True)
 
 
             user_lock = models.UserLock(is_owner=True)
