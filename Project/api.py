@@ -4,10 +4,10 @@ from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
 from flask_restful import Resource
 
-from Project import models
+from Project import models, serialisers
 from Project.app import db, app
 from Project.auth import user_datastore
-from flask_restful import Api
+from flask_restful import Api, fields, marshal_with
 
 
 api = Api(app)
@@ -206,10 +206,27 @@ def change_lock_state(lock_id, new_state):
 
 ######### new shite
 
-# class UserList(Resource):
-#     def get(self):
+class UserList(Resource):
 
-#     def post(self):
+    # gets list of users
+    @marshal_with(serialisers.user_fields)
+    def get(self):
+        users = models.User.query.all()
+        return users
+
+    @marshal_with(serialisers.user_fields)
+    def post(self):
+        email = request.form['email']
+        password = encrypt_password(request.form['password'])
+
+        if not is_user_in_db(email):
+            user_datastore.create_user(email=email, password=password)
+            db.session.commit()
+            new_user = models.User.query.filter_by(email=email).first()
+            return new_user, 201
+
+        return models.User.query.filter_by(email=email).first(), 406
+
 #
 # class UserDetail(Resource):
 #     def get(self, user_id):
@@ -242,3 +259,6 @@ api.add_resource(HasLock, '/has-lock')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
 api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
+
+# new endpoints
+api.add_resource(UserList, '/user')
