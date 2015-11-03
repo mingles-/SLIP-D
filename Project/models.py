@@ -31,10 +31,12 @@ class User(db.Model, UserMixin):
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=role_user,
                             backref=db.backref('users', lazy='dynamic'))
+    # locks = db.relationship('locks', secondary=user_lock,
+    #                         backref=db.backref('locks', lazy='dynamic'))
+
 
 
 class Lock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    owner = db.Column(db.String(255), unique=True)
     locked = db.Column(db.Boolean())
 
