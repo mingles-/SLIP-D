@@ -10,7 +10,7 @@ class SmartLockTestCaseNew(BaseTest):
 
     def setUp(self):
         super(SmartLockTestCaseNew, self).setUp()
-        self.app.post('/register-user', data=dict(email="test@mail.com", password="python"))
+        self.app.post('/user', data=dict(email="test@mail.com", password="python"))
 
     def tearDown(self):
         super(SmartLockTestCaseNew, self).tearDown()

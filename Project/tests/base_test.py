@@ -4,7 +4,7 @@ import tempfile
 from base64 import b64encode
 
 from Project.main import app, db
-from Project.main import User, Lock, Role, role_user, user_lock
+from Project.main import User, Lock, Role, role_user, UserLock
 
 __author__ = 'mingles'
 
@@ -15,11 +15,11 @@ class BaseTest(unittest.TestCase):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
         app.config['TESTING'] = True
         self.app = app.test_client()
+        UserLock.query.delete()
         User.query.delete()
         Lock.query.delete()
         Role.query.delete()
         role_user.delete()
-        user_lock.delete()
         db.session.commit()
 
     def tearDown(self):
