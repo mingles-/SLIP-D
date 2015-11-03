@@ -32,12 +32,11 @@ class User(db.Model, UserMixin):
     locks = db.relationship("UserLock")
 
 
-
 class Lock(db.Model):
     __tablename__ = 'lock'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=True)
     locked = db.Column(db.Boolean())
-
 
 
 class Role(db.Model, RoleMixin):
