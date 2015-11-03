@@ -1,5 +1,5 @@
-
 import unittest
+import json
 
 from Project.tests.base_test import BaseTest
 
@@ -12,31 +12,48 @@ class SmartLockTestCase(BaseTest):
         super(SmartLockTestCase, self).setUp()
 
         """Register Lock 1 and open it"""
-        self.app.post('/register-user', data=dict(email="test@mail.com", password="python"))
-        self.app.post('/register-lock/123', headers=self.auth_header("test@mail.com", "python"))
+        self.app.post('/user', data=dict(email="test@mail.com", password="python"))
+        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123))
         response = self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(200, response.status_code)
 
         """Register Lock 2"""
-        self.app.post('/register-user', data=dict(email="test2@mail.com", password="python"))
-        self.app.post('/register-lock/321', headers=self.auth_header("test2@mail.com", "python"))
+        self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
+        self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=321))
 
     def tearDown(self):
         super(SmartLockTestCase, self).tearDown()
 
     def test_checkLockGood(self):
-        """Check opened Lock is open"""
-        response = self.app.get('/check/123', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(200, response.status_code)
+        """Open closed lock and check if open"""
+        lock_closed = True
+        self.app.put('/lock/123', headers=self.auth_header("test@mail.com", "python"))
+        self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))
+
+        locks = json.loads((self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))).data)
+        for lock in locks:
+            if lock['id'] == 123:
+                lock_closed = lock['locked']
+
+        self.assertEqual(lock_closed, False)
 
     def test_checkClosedLock(self):
-        """Check opened Lock is closed"""
-        response = self.app.get('/check/321', headers=self.auth_header("test2@mail.com", "python"))
-        self.assertEqual(423, response.status_code)
+        """Check created Lock is automatically closed"""
+        lock_closed = False
+        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124))
+        self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))
+
+        locks = json.loads((self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))).data)
+        print locks
+        for lock in locks:
+            if lock['id'] == 124:
+                lock_closed = lock['locked']
+
+        self.assertEqual(lock_closed, True)
 
     def test_bad_credentials(self):
         """Check bad credentials are rejected"""
-        response = self.app.get('/check/123', headers=self.auth_header("test3@mail.com", "python"))
+        response = self.app.get('/lock', headers=self.auth_header("test3@mail.com", "python"))
         self.assertEqual(401, response.status_code)
 
     def test_bad_lock(self):
@@ -46,8 +63,8 @@ class SmartLockTestCase(BaseTest):
 
     def test_lock_not_owned(self):
         """check lock which isn't owned is rejected"""
-        response = self.app.get('/check/321', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(403, response.status_code)
+        response = self.app.get('/open/321', headers=self.auth_header("test@mail.com", "python"))
+        self.assertEqual(405, response.status_code)
 
 
 if __name__ == '__main__':
