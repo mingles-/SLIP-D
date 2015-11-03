@@ -202,6 +202,34 @@ def change_lock_state(lock_id, new_state):
 
     return lock_id, 404
 
+
+
+######### new shite
+
+# class UserList(Resource):
+#     def get(self):
+
+#     def post(self):
+#
+# class UserDetail(Resource):
+#     def get(self, user_id):
+#
+# class LockList(Resource):
+#     def get(self):
+#     def post(self):
+#
+# class LockDetail(Resource):
+#     def put(self):
+#
+# class FriendList(Resource):
+#     def get(self):
+#     def post(self):
+#
+# class FriendDetail(Resource):
+#     def delete(self):
+
+
+
 # testing endpoints
 api.add_resource(HelloWorld, '/')
 api.add_resource(ProtectedResource, '/protected-resource')
