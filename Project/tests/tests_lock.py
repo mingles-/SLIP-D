@@ -33,6 +33,12 @@ class SmartLockTestCase(BaseTest):
         response = self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
         self.assertEqual(406, response.status_code)
 
+    def test_already_registered_lock_same_user(self):
+        """Attempt to register an already registered lock with a different user"""
+        self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
+        response = self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
+        self.assertEqual(406, response.status_code)
+
     def test_get_list_of_locks(self):
         """gets a list of all locks for a user"""
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124, lock_name="123"))
@@ -70,6 +76,8 @@ class SmartLockTestCase(BaseTest):
         self.app.put('/close/123', headers=self.auth_header("test@mail.com", "python"))
         database_lock_id = Lock.query.filter_by(id=123).first()
         self.assertEqual(database_lock_id.locked, True)
+
+
 
 if __name__ == '__main__':
     unittest.main()
