@@ -63,7 +63,6 @@ class RegisterUser(Resource):
     """
     This endpoint registers a user's email and password, encrypting the latter in the database.
     """
-
     def post(self):
         email = request.form['email']
         password = encrypt_password(request.form['password'])
@@ -75,30 +74,6 @@ class RegisterUser(Resource):
             return new_user[0].email, 201
 
         return email, 406
-
-class HasLock(Resource):
-
-    decorators = [requires_auth]
-    def get(self):
-
-        email = request.authorization.username
-        database_lock_id = models.Lock.query.filter_by(owner=email)
-
-        if database_lock_id.count() > 0:
-
-            lock_id = database_lock_id[0].id
-            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
-            lock_state = database_lock_id.locked
-
-            print lock_state
-
-
-            return [{'lock_id': lock_id, 'is_locked': lock_state, }], 200
-
-        else:
-
-            return [], 401
-
 
 
 
