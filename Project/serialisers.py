@@ -8,3 +8,8 @@ user_fields = {
     'last name':   fields.String,
     'active':   fields.Boolean,
 }
+
+lock_fields = {
+    'id':   fields.Integer,
+    'locked':   fields.Boolean,
+}
