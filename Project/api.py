@@ -18,11 +18,10 @@ def check_auth(email, password):
     This function is called to check if a username & password combination is valid.
     """
     users_with_that_email = models.User.query.filter_by(email=email)
-    db_password = ""
     if users_with_that_email.count() > 0:
         db_password = users_with_that_email[0].password
-
-    return verify_password(password, db_password)
+        return verify_password(password, db_password)
+    return False
 
 
 def authenticate():
