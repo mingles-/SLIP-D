@@ -191,25 +191,20 @@ def is_user_in_db(user):
 def change_lock_state(lock_id, new_state):
 
     if lock_id is not None:
+
         email = request.authorization.username
         user_id = models.User.query.filter_by(email=email).first().id
-        database_lock_id = models.UserLock.query.filter_by(lock_id=lock_id)
+        users_with_lock = models.UserLock.query.filter_by(lock_id=lock_id)
 
-
-        if database_lock_id is not None:
-
+        if users_with_lock is not None:
             lock_row = models.Lock.query.filter_by(id=lock_id).first()
-            for lock in database_lock_id:
-                if user_id == lock.user_id:
-                    # print database_lock_id.locked
-                    # print new_state
+            for user_with_lock in users_with_lock:
+                if user_id == user_with_lock.user_id:
                     lock_row.locked = new_state
-
                     db.session.commit()
                     return lock_id, 200
                 else:
                     return lock_id, 401
-
     return lock_id, 404
 
 
