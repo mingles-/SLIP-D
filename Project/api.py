@@ -59,45 +59,6 @@ class ProtectedResource(Resource):
         return {"message": "Hello"}, 200
 
 
-class RegisterUser(Resource):
-    """
-    This endpoint registers a user's email and password, encrypting the latter in the database.
-    """
-    def post(self):
-        email = request.form['email']
-        password = encrypt_password(request.form['password'])
-
-        if not is_user_in_db(email):
-            user_datastore.create_user(email=email, password=password)
-            db.session.commit()
-            new_user = models.User.query.filter_by(email=email)
-            return new_user[0].email, 201
-
-        return email, 406
-
-
-
-class RegisterLock(Resource):
-    """
-    This endpoint registers a lock, associating it with the user's password.
-    """
-
-    decorators = [requires_auth]
-
-    def post(self, lock_id):
-
-        email = request.authorization.username
-        database_lock_id = models.Lock.query.filter_by(id=lock_id)
-
-        if database_lock_id.count() > 0:
-            return lock_id, 406
-        else:
-            this = models.Lock(id=lock_id, owner=email, locked=True)
-            db.session.add(this)
-            db.session.commit()
-            return lock_id, 200
-
-
 class OpenLock(Resource):
     """
     This endpoint opens the lock if lockID and associated user is consistent within the database
@@ -116,42 +77,6 @@ class CloseLock(Resource):
 
     def put(self, lock_id):
         return change_lock_state(lock_id, True)
-
-
-class LockList1(Resource):
-    def get(self):
-        locks = db.session.query(models.Lock).all()
-        lock_json = []
-        for lock in locks:
-            lock_json.append({"id": lock.id, "locked": lock.locked})
-        return lock_json
-
-
-class LockCheck(Resource):
-    """
-    This endpoint checks if the lock in the database is to be opened or closed
-    """
-    decorators = [requires_auth]
-
-    def get(self, lock_id):
-        lock_state = False
-        if lock_id is not None:
-            email = request.authorization.username
-            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
-
-            if database_lock_id is not None:
-                if email == database_lock_id.owner:
-                    print "got here"
-                    lock_state = database_lock_id.locked
-
-                    if lock_state is False:
-                        return lock_state, 200
-                    else:
-                        return lock_state, 423
-                else:
-                    return lock_state, 403
-
-        return lock_state, 404
 
 
 def is_user_in_db(user):
@@ -273,13 +198,6 @@ class LockList(Resource):
 # testing endpoints
 api.add_resource(HelloWorld, '/')
 api.add_resource(ProtectedResource, '/protected-resource')
-# api.add_resource(LockList1, '/lock')
-
-# actual endpoints
-api.add_resource(RegisterUser, '/register-user')
-api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
-api.add_resource(HasLock, '/has-lock')
-api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
 
 # new endpoints
 api.add_resource(UserList, '/user')
