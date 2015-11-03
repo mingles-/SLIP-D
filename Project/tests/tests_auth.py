@@ -20,6 +20,11 @@ class SmartLockTestCaseNew(BaseTest):
         response = self.app.get('/protected-resource')
         self.assertEqual(401, response.status_code)
 
+    def test_auth_bad2(self):
+        """ Ensure that bad user credentials are rejected - Sam """
+        response = self.app.get('/protected-resource', headers=self.auth_header("", ""))
+        self.assertEqual(401, response.status_code)
+
     def test_auth_good(self):
         """ Ensure that good user credentials are accepted - Sam """
         response = self.app.get('/protected-resource', headers=self.auth_header("test@mail.com", "python"))

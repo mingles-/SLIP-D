@@ -23,6 +23,11 @@ class SmartLockTestCase(BaseTest):
         self.assertEqual(json.loads(response.data)["id"], 124)
         self.assertEqual(json.loads(response.data)["locked"], True)
 
+    def test_register_lock_bad_auth(self):
+        """Fail an unauthorized user """
+        response = self.app.post('/lock', headers=self.auth_header("", ""), data=dict(lock_id=124, lock_name="123"))
+        self.assertEqual(401, response.status_code)
+
     def test_already_registered_lock(self):
         """Attempt to register an already registered lock"""
         response = self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
