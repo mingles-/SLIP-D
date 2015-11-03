@@ -13,13 +13,14 @@ class SmartLockTestCase(BaseTest):
 
         """Register Lock 1 and open it"""
         self.app.post('/user', data=dict(email="test@mail.com", password="python"))
-        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123))
+        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123 , lock_name="123"))
         response = self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(200, response.status_code)
 
         """Register Lock 2"""
         self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
-        self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=321))
+        self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=321, lock_name="123"))
+        self.assertEqual(200, response.status_code)
 
     def tearDown(self):
         super(SmartLockTestCase, self).tearDown()
@@ -40,7 +41,7 @@ class SmartLockTestCase(BaseTest):
     def test_checkClosedLock(self):
         """Check created Lock is automatically closed"""
         lock_closed = False
-        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124))
+        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124, lock_name="123"))
         self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))
 
         locks = json.loads((self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))).data)
