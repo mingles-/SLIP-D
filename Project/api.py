@@ -177,7 +177,6 @@ class LockList(Resource):
             return lock.first(), 201
 
 
-
 class Status(Resource):
 
     def get(self, lock_id):
@@ -187,14 +186,53 @@ class Status(Resource):
             return state, 200
         else:
             return False, 404
-#
-#
-# class FriendList(Resource):
-#     def get(self):
-#     def post(self):
-#
-# class FriendDetail(Resource):
-#     def delete(self):
+
+class Friend(Resource):
+    decorators = [requires_auth]
+
+    @marshal_with(serialisers.user_fields)
+    def post(self):
+
+        friend_id = int(request.form['friend_id'])
+        email = request.authorization.username
+        user_id = models.User.query.filter_by(email=email).first().id
+
+        existing_friend = models.Friend.query.filter_by(id=user_id,friend_id=friend_id)
+        friend_user_row = models.User.query.filter_by(id=friend_id).first()
+
+
+        if (not existing_friend.count() > 0) and friend_id != user_id:
+
+            friendship = models.Friend(id=user_id, friend_id=friend_id)
+
+            db.session.add(friendship)
+            db.session.commit()
+
+            return friend_user_row, 201
+
+        else:
+
+            return friend_user_row, 401
+
+    @marshal_with(serialisers.user_fields)
+    def get(self):
+
+        email = request.authorization.username
+        user_id = models.User.query.filter_by(email=email).first().id
+        friend_ids = models.Friend.query.filter_by(id=user_id)
+
+
+
+        friend_user_rows = []
+        for friend_id in friend_ids:
+            friend_user_rows.append(models.User.query.filter_by(id=friend_id.friend_id).first())
+
+        return friend_user_rows, 200
+
+    # def delete(self):
+
+
+
 
 
 
@@ -209,5 +247,6 @@ api.add_resource(LockList, '/lock')
 api.add_resource(OpenLock, '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close/<int:lock_id>')
 api.add_resource(Status, '/status/<int:lock_id>')
+api.add_resource(Friend, '/friend')
 
 
