@@ -200,7 +200,6 @@ class Friend(Resource):
         existing_friend = models.Friend.query.filter_by(id=user_id,friend_id=friend_id)
         friend_user_row = models.User.query.filter_by(id=friend_id).first()
 
-
         if (not existing_friend.count() > 0) and friend_id != user_id:
 
             friendship = models.Friend(id=user_id, friend_id=friend_id)
@@ -219,18 +218,37 @@ class Friend(Resource):
 
         email = request.authorization.username
         user_id = models.User.query.filter_by(email=email).first().id
+
+        return self.get_users_friends(user_id), 200
+
+    # @marshal_with(serialisers.user_fields)
+    def delete(self):
+
+        email = request.authorization.username
+        user_id = models.User.query.filter_by(email=email).first().id
+        friend_id = int(request.form['friend_id'])
+        existing_friend = models.Friend.query.filter_by(id=user_id, friend_id=friend_id)
+
+        if existing_friend.count() > 0:
+
+            db.session.query(models.Friend).filter(models.Friend.id==user_id, models.Friend.friend_id==friend_id).delete()
+
+            return self.get_users_friends(user_id), 200
+
+        else:
+
+            # deleting friendship with an id which isn't a friend
+            return self.get_users_friends(user_id), 401
+
+
+    @staticmethod
+    def get_users_friends(user_id):
         friend_ids = models.Friend.query.filter_by(id=user_id)
-
-
-
         friend_user_rows = []
         for friend_id in friend_ids:
             friend_user_rows.append(models.User.query.filter_by(id=friend_id.friend_id).first())
 
-        return friend_user_rows, 200
-
-    # def delete(self):
-
+        return friend_user_rows
 
 
 
