@@ -4,7 +4,7 @@ import tempfile
 from base64 import b64encode
 
 from Project.main import app, db
-from Project.main import User, Lock, Role, role_user, UserLock
+from Project.main import User, Lock, Role, role_user, UserLock, Friend
 
 __author__ = 'mingles'
 
@@ -16,8 +16,9 @@ class BaseTest(unittest.TestCase):
         app.config['TESTING'] = True
         self.app = app.test_client()
         UserLock.query.delete()
-        User.query.delete()
+        Friend.query.delete()
         Lock.query.delete()
+        User.query.delete()
         Role.query.delete()
         role_user.delete()
         db.session.commit()
