@@ -77,6 +77,17 @@ class SmartLockTestCase(BaseTest):
         database_lock_id = Lock.query.filter_by(id=123).first()
         self.assertEqual(database_lock_id.locked, True)
 
+    def test_status_closed(self):
+        response = self.app.get('/status/123')
+        self.assertEqual(response.data, "true\n")
+
+    def test_status_open(self):
+        self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
+        response = self.app.get('/status/123')
+        self.assertEqual(response.data, "false\n")
+
+
+
 
 
 if __name__ == '__main__':
