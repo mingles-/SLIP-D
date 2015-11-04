@@ -78,13 +78,22 @@ class SmartLockTestCase(BaseTest):
         self.assertEqual(database_lock_id.locked, True)
 
     def test_status_closed(self):
+        """Check status of locked lock"""
         response = self.app.get('/status/123')
         self.assertEqual(response.data, "true\n")
 
     def test_status_open(self):
+        """Check status of unlocked lock"""
         self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         response = self.app.get('/status/123')
         self.assertEqual(response.data, "false\n")
+
+    def test_status_open_closed(self):
+        """Check status of an unlocked, then relocked lock"""
+        self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
+        self.app.put('/close/123', headers=self.auth_header("test@mail.com", "python"))
+        response = self.app.get('/status/123')
+        self.assertEqual(response.data, "true\n")
 
 
 
