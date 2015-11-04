@@ -45,7 +45,6 @@ class SmartLockTestCase(BaseTest):
         self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))
 
         locks = json.loads((self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))).data)
-        print locks
         for lock in locks:
             if lock['id'] == 124:
                 lock_closed = lock['locked']

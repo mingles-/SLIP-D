@@ -15,8 +15,13 @@ class UserLock(db.Model):
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
     lock_id = db.Column(db.Integer(), db.ForeignKey('lock.id'), primary_key=True)
     is_owner = db.Column(db.Boolean())
+    expiry = db.Column(db.DATE(), nullable=True)
     lock = db.relationship("Lock")
 
+class Friend(db.Model):
+    __tablename__ = 'friend'
+    id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
+    friend_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'

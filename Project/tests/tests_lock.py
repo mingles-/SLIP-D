@@ -96,8 +96,5 @@ class SmartLockTestCase(BaseTest):
         self.assertEqual(response.data, "true\n")
 
 
-
-
-
 if __name__ == '__main__':
     unittest.main()
