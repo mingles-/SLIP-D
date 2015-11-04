@@ -178,7 +178,15 @@ class LockList(Resource):
 
 
 
+class Status(Resource):
 
+    def get(self, lock_id):
+        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        if database_lock_id.count() > 0:
+            state = database_lock_id.first().locked
+            return state, 200
+        else:
+            return False, 404
 #
 #
 # class FriendList(Resource):
@@ -198,6 +206,8 @@ api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(UserList, '/user')
 api.add_resource(UserDetail, '/user/<int:user_id>')
 api.add_resource(LockList, '/lock')
-api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
-api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
+api.add_resource(OpenLock, '/open/<int:lock_id>')
+api.add_resource(CloseLock, '/close/<int:lock_id>')
+api.add_resource(Status, '/status/<int:lock_id>')
+
 
