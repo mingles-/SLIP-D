@@ -6,8 +6,8 @@ from app import db
 
 # Define models
 role_user = db.Table('role_user',
-                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+                     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+                     db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
 
 
 class UserLock(db.Model):
@@ -18,10 +18,12 @@ class UserLock(db.Model):
     expiry = db.Column(db.DATE(), nullable=True)
     lock = db.relationship("Lock")
 
+
 class Friend(db.Model):
     __tablename__ = 'friend'
     id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
     friend_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
@@ -40,7 +42,7 @@ class User(db.Model, UserMixin):
 class Lock(db.Model):
     __tablename__ = 'lock'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=True)
+    name = db.Column(db.String(255), nullable=False, default="")
     locked = db.Column(db.Boolean())
 
 
