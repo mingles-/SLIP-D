@@ -255,7 +255,7 @@ class Friend(Resource):
 
 
 # testing endpoints
-api.add_resource(HelloWorld, '/')
+api.add_resource(HelloWorld, '/hello')
 api.add_resource(ProtectedResource, '/protected-resource')
 
 # new endpoints
