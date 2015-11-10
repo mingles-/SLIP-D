@@ -4,8 +4,8 @@ from flask_restful import fields, marshal_with
 user_fields = {
     'id':   fields.Integer,
     'email':   fields.String,
-    'first name':   fields.String,
-    'last name':   fields.String,
+    'first_name':   fields.String,
+    'last_name':   fields.String,
     'active':   fields.Boolean,
 }
 
