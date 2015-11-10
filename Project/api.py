@@ -146,7 +146,7 @@ class Me(Resource):
     @marshal_with(serialisers.user_fields)
     def get(self):
         email = request.authorization.username
-        user_exists = models.User.query.filter_by(id=email)
+        user_exists = models.User.query.filter_by(email=email)
         if user_exists > 0:
             return user_exists.first(), 200
         else:

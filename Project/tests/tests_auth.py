@@ -58,6 +58,10 @@ class SmartLockTestCaseNew(BaseTest):
         response = self.app.get('/user/' + str(user_id), headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(json.loads(response.data)['email'], "test2@mail.com")
 
+    def test_me(self):
+        """Test me Endpoint"""
+        response = self.app.get('/me', headers=self.auth_header("test@mail.com", "python"))
+        self.assertEqual(json.loads(response.data)['email'], "test@mail.com")
 
 if __name__ == '__main__':
     unittest.main()
