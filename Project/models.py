@@ -26,10 +26,10 @@ class Friend(db.Model):
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True)
-    first_name = db.Column(db.String(255), unique=True)
-    last_name = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255),)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    first_name = db.Column(db.String(255), unique=False, nullable=False, default="")
+    last_name = db.Column(db.String(255), unique=False, nullable=False, default="")
+    password = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=role_user,
