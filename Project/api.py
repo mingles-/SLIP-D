@@ -140,6 +140,18 @@ class UserDetail(Resource):
         else:
             return user_id, 404
 
+class Me(Resource):
+    decorators = [requires_auth]
+    # return user information
+    @marshal_with(serialisers.user_fields)
+    def get(self):
+        email = request.authorization.username
+        user_exists = models.User.query.filter_by(id=email)
+        if user_exists > 0:
+            return user_exists.first(), 200
+        else:
+            return email, 404
+
 
 class LockList(Resource):
     decorators = [requires_auth]
@@ -257,9 +269,9 @@ class Friend(Resource):
 # testing endpoints
 api.add_resource(HelloWorld, '/hello')
 api.add_resource(ProtectedResource, '/protected-resource')
-
 # new endpoints
 api.add_resource(UserList, '/user')
+api.add_resource(Me, '/me')
 api.add_resource(UserDetail, '/user/<int:user_id>')
 api.add_resource(LockList, '/lock')
 api.add_resource(OpenLock, '/open/<int:lock_id>')
