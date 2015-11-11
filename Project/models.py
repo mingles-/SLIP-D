@@ -1,4 +1,6 @@
 from flask.ext.security import RoleMixin, UserMixin
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import backref
 
 __author__ = 'mingles'
 
@@ -8,22 +10,6 @@ from app import db
 role_user = db.Table('role_user',
                      db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
                      db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
-
-
-class UserLock(db.Model):
-    __tablename__ = 'user_lock'
-    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
-    lock_id = db.Column(db.Integer(), db.ForeignKey('lock.id'), primary_key=True)
-    is_owner = db.Column(db.Boolean())
-    expiry = db.Column(db.DATE(), nullable=True)
-    lock = db.relationship("Lock")
-
-
-class Friend(db.Model):
-    __tablename__ = 'friend'
-    id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
-    friend_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
-
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
@@ -36,7 +22,29 @@ class User(db.Model, UserMixin):
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=role_user,
                             backref=db.backref('users', lazy='dynamic'))
-    locks = db.relationship("UserLock")
+    locks = association_proxy('user_locks', 'lock')
+
+
+class UserLock(db.Model):
+    __tablename__ = 'user_lock'
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
+    lock_id = db.Column(db.Integer(), db.ForeignKey('lock.id'), primary_key=True)
+    is_owner = db.Column(db.Boolean())
+    expiry = db.Column(db.DATE(), nullable=True)
+    user = db.relationship(User, backref=backref("user_locks", cascade="all, delete-orphan"))
+    lock = db.relationship("Lock")
+
+    def __init__(self, user, lock, is_owner, expiry=None):
+        self.user = user
+        self.lock = lock
+        self.is_owner = is_owner
+        self.expiry = expiry
+
+
+class Friend(db.Model):
+    __tablename__ = 'friend'
+    id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
+    friend_id = db.Column(db.Integer(), db.ForeignKey('user.id'), primary_key=True)
 
 
 class Lock(db.Model):

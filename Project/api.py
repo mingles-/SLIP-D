@@ -158,8 +158,9 @@ class LockList(Resource):
     # gets list of all locks
     @marshal_with(serialisers.lock_fields)
     def get(self):
-        locks = models.Lock.query.all()
-        return locks
+        email = request.authorization.username
+        user = models.User.query.filter_by(email=email).first()
+        return list(user.locks)
 
     # register lock
     @marshal_with(serialisers.lock_fields)
@@ -176,11 +177,7 @@ class LockList(Resource):
             user = models.User.query.filter_by(email=email).first()
             lock = models.Lock(id=lock_id, name=lock_name, locked=True)
 
-
-            user_lock = models.UserLock(is_owner=True)
-            user_lock.lock = lock
-            user.locks.append(user_lock)
-
+            user_lock = models.UserLock(user, lock, is_owner=True)
 
             db.session.add(lock)
             db.session.add(user_lock)
