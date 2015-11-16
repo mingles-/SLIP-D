@@ -192,7 +192,10 @@ class Status(Resource):
         database_lock_id = models.Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
             state = database_lock_id.first().locked
-            return state, 200
+            if state:
+                return state, 202
+            else:
+                return state, 200
         else:
             return False, 404
 
