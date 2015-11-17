@@ -302,11 +302,10 @@ class ImClosed(Resource):
             lock = database_lock_id.first()
             if lock.requested_open is False:
                 lock.actually_open = False
+                lock.requested_open = True
                 db.session.commit()
                 return False, 202
             else:
-                lock.actually_open = True
-                db.session.commit()
                 return True, 200
         else:
             return False, 404
@@ -317,23 +316,7 @@ def get_user_id():
     return user_id
 
 
-class FriendLocks(Resource):
 
-    decorators = [requires_auth]
-
-    # add a friend to one of your locks
-    def post(self):
-        friend_id = request.form['friend_id']
-        lock_id = request.form['lock_id']
-        user_id = get_user_id()
-
-        # if friends and user owns lock
-        are_friends = models.Friend.query.filter_by(user_id=user_id,friend_id=friend_id) > 0
-        user_owns_lock = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id).first().is_owner
-        if are_friends:
-            lock_user = models.Friend(user_id=friend_id, lock_id=lock_id, is_owner=False)
-            db.session.add(lock_user)
-            db.session.commit()
 
 
 
@@ -345,6 +328,7 @@ api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(ImOpen, '/im-open/<int:lock_id>')
 api.add_resource(ImClosed, '/im-closed/<int:lock_id>')
 
+#api.add_resource(FriendLocks, '/friend-lock')
 
 api.add_resource(UserList, '/user')
 api.add_resource(Me, '/me')
