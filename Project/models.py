@@ -51,7 +51,10 @@ class Lock(db.Model):
     __tablename__ = 'lock'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, default="")
-    locked = db.Column(db.Boolean())
+    # this is true when app requests lock to be open
+    requested_open = db.Column(db.Boolean())
+    # this is true when the lock says it is open
+    actually_open = db.Column(db.Boolean())
 
 
 class Role(db.Model, RoleMixin):
