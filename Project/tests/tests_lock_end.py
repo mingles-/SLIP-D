@@ -6,13 +6,13 @@ from Project.tests.base_test import BaseTest
 __author__ = 'mingles'
 
 
-class SmartLockTestCase(BaseTest):
+class SmartLockTestCaseLockEnd(BaseTest):
 
     def setUp(self):
-        super(SmartLockTestCase, self).setUp()
+        super(SmartLockTestCaseLockEnd, self).setUp()
 
         """Register Lock 1 and open it"""
-        self.app.post('/user', data=dict(email="test@mail.com", password="python"))
+        self.register_user(username="test@mail.com", password="python")
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123 , lock_name="123"))
         response = self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(200, response.status_code)
@@ -23,7 +23,7 @@ class SmartLockTestCase(BaseTest):
         self.assertEqual(200, response.status_code)
 
     def tearDown(self):
-        super(SmartLockTestCase, self).tearDown()
+        super(SmartLockTestCaseLockEnd, self).tearDown()
 
 
     def test_checkClosedLock(self):

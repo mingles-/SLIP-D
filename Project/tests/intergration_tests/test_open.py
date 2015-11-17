@@ -10,7 +10,7 @@ class OpenWaitingDoneTestCase(BaseTest):
 
     def setUp(self):
         super(OpenWaitingDoneTestCase, self).setUp()
-        self.app.post('/user', data=dict(email="test", password="python"))
+        self.register_user(username="test", password="python")
         self.app.post('/lock', headers=self.auth_header("test", "python"), data=dict(lock_id=134, lock_name="134"))
 
     def test_open_waiting_done(self):
@@ -44,7 +44,6 @@ class OpenWaitingDoneTestCase(BaseTest):
         # actually_open = True, requested_open = False
         # App polls api and responds actually_open true
         response = self.app.get('/lock/134', headers=self.auth_header("test", "python"))
-        print response.data
         self.assertEqual(json.loads(response.data)['requested_open'], False)
         self.assertEqual(json.loads(response.data)['actually_open'], True)
 

@@ -23,6 +23,10 @@ class BaseTest(unittest.TestCase):
         role_user.delete()
         db.session.commit()
 
+    def register_user(self, username, password, first_name="mingley", last_name="dingly"):
+        return self.app.post('/user', data=dict(email=username, password=password, first_name=first_name, last_name=last_name))
+
+
     def tearDown(self):
         os.close(self.db_fd)
         os.unlink(app.config['DATABASE'])

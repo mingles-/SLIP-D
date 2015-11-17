@@ -10,7 +10,7 @@ class SmartLockTestLock(BaseTest):
 
     def setUp(self):
         super(SmartLockTestLock, self).setUp()
-        self.app.post('/user', data=dict(email="test@mail.com", password="python"))
+        self.register_user(username="test@mail.com", password="python")
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
 
     def tearDown(self):
@@ -35,7 +35,7 @@ class SmartLockTestLock(BaseTest):
 
     def test_already_registered_lock_same_user(self):
         """Attempt to register an already registered lock with a different user"""
-        self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
+        self.register_user(username="test2@mail.com", password="python")
         response = self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
         self.assertEqual(406, response.status_code)
 
@@ -64,7 +64,7 @@ class SmartLockTestLock(BaseTest):
 
     def test_open_lock_not_owned(self):
         """Attempt to open an existing lock not owned by user"""
-        self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
+        self.register_user(username="test2@mail.com", password="python")
         self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=124, lock_name="123"))
         response = self.app.put('/open/124', headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(401, response.status_code)

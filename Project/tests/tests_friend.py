@@ -10,10 +10,10 @@ class SmartLockTestFriend(BaseTest):
 
     def setUp(self):
         super(SmartLockTestFriend, self).setUp()
-        user_reg = self.app.post('/user', data=dict(email="test@mail.com", password="python"))
+        user_reg = self.register_user(username="test@mail.com", password="python")
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
 
-        user2_reg = self.app.post('/user', data=dict(email="test2@mail.com", password="python"))
+        user2_reg = self.register_user(username="test2@mail.com", password="python")
         self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=456, lock_name="456"))
 
         self.user_id = json.loads(user_reg.data)['id']
