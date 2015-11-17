@@ -2,14 +2,16 @@ from functools import wraps
 
 from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
+import sys
 from Project import models, serialisers
 from Project.app import db, app
 from Project.auth import user_datastore
 from flask.ext.restplus import Api, Resource, fields, marshal_with
+sys.setrecursionlimit(1000000)
+
 
 api = Api(app)
 ns = api.namespace('smartlock', description='User operations')
-
 
 
 def check_auth(email, password):
@@ -265,7 +267,6 @@ class Friend(Resource):
             # deleting friendship with an id which isn't a friend
             return self.get_users_friends(user_id), 401
 
-
     @staticmethod
     def get_users_friends(user_id):
         friend_ids = models.Friend.query.filter_by(id=user_id)
@@ -276,7 +277,6 @@ class Friend(Resource):
         return friend_user_rows
 
 class ImOpen(Resource):
-
     # im open
     def get(self, lock_id):
         database_lock_id = models.Lock.query.filter_by(id=lock_id)
@@ -315,6 +315,26 @@ def get_user_id():
     email = request.authorization.username
     user_id = models.User.query.filter_by(email=email).first().id
     return user_id
+
+
+class FriendLocks(Resource):
+
+    decorators = [requires_auth]
+
+    # add a friend to one of your locks
+    def post(self):
+        friend_id = request.form['friend_id']
+        lock_id = request.form['lock_id']
+        user_id = get_user_id()
+
+        # if friends and user owns lock
+        are_friends = models.Friend.query.filter_by(user_id=user_id,friend_id=friend_id) > 0
+        user_owns_lock = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id).first().is_owner
+        if are_friends:
+            lock_user = models.Friend(user_id=friend_id, lock_id=lock_id, is_owner=False)
+            db.session.add(lock_user)
+            db.session.commit()
+
 
 
 # testing endpoints
