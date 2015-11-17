@@ -112,6 +112,18 @@ class UserList(Resource):
     @marshal_with(serialisers.user_fields)
     def get(self):
         users = models.User.query.all()
+        return users, 200
+
+    # get users associated with specific lock
+    @requires_auth
+    @marshal_with(serialisers.user_fields)
+    def get(self, lock_id):
+        users_with_lock = models.UserLock.query.filter_by(lock_id=lock_id)
+        users = []
+        if users_with_lock.count > 0:
+            for row in users_with_lock:
+                users.append(models.User.query.filter_by(id=row.user_id).first())
+
         return users
 
     # register user
