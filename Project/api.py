@@ -121,9 +121,11 @@ class UserList(Resource):
     def post(self):
         email = request.form['email']
         password = encrypt_password(request.form['password'])
+        first_name = "" + request.form['first_name']
+        last_name = "" + request.form['last_name']
 
         if not is_user_in_db(email):
-            user_datastore.create_user(email=email, password=password)
+            user_datastore.create_user(email=email, password=password, first_name=first_name, last_name=last_name)
             db.session.commit()
             new_user = models.User.query.filter_by(email=email).first()
             return new_user, 201
