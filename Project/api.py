@@ -63,8 +63,9 @@ class OpenLock(Resource):
     """
     decorators = [requires_auth]
 
+    @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        return change_lock_state(lock_id, False)
+        return change_lock_state(lock_id, True)
 
 
 class CloseLock(Resource):
@@ -74,7 +75,7 @@ class CloseLock(Resource):
     decorators = [requires_auth]
 
     def put(self, lock_id):
-        return change_lock_state(lock_id, True)
+        return change_lock_state(lock_id, False)
 
 
 def is_user_in_db(user):
@@ -85,7 +86,7 @@ def is_user_in_db(user):
         return False
 
 
-@requires_auth
+
 def change_lock_state(lock_id, new_state):
 
     if lock_id is not None:
@@ -98,12 +99,12 @@ def change_lock_state(lock_id, new_state):
             lock_row = models.Lock.query.filter_by(id=lock_id).first()
             for user_with_lock in users_with_lock:
                 if user_id == user_with_lock.user_id:
-                    lock_row.locked = new_state
+                    lock_row.requested_open = new_state
                     db.session.commit()
-                    return lock_id, 200
+                    return models.Lock.query.filter_by(id=lock_id).first(), 200
                 else:
-                    return lock_id, 401
-    return lock_id, 404
+                    return models.Lock.query.filter_by(id=lock_id).first(), 401
+    return None, 404
 
 
 class UserList(Resource):
@@ -165,6 +166,13 @@ class Me(Resource):
             return email, 404
 
 
+class LockDetail(Resource):
+    decorators = [requires_auth]
+    @marshal_with(serialisers.lock_fields)
+    def get(self, lock_id):
+        lock = models.Lock.query.filter_by(id=lock_id).first()
+        return lock
+
 class LockList(Resource):
     decorators = [requires_auth]
     # gets list of all locks
@@ -173,6 +181,8 @@ class LockList(Resource):
         email = request.authorization.username
         user = models.User.query.filter_by(email=email).first()
         return list(user.locks)
+
+
 
     # register lock
     @marshal_with(serialisers.lock_fields)
@@ -187,7 +197,7 @@ class LockList(Resource):
             return lock_id, 406
         else:
             user = models.User.query.filter_by(email=email).first()
-            lock = models.Lock(id=lock_id, name=lock_name, locked=True)
+            lock = models.Lock(id=lock_id, name=lock_name, requested_open=False, actually_open=False)
 
             user_lock = models.UserLock(user, lock, is_owner=True)
 
@@ -203,7 +213,7 @@ class Status(Resource):
     def get(self, lock_id):
         database_lock_id = models.Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
-            state = database_lock_id.first().locked
+            state = database_lock_id.first().requested_open
             if state:
                 return state, 202
             else:
@@ -221,7 +231,7 @@ class Friend(Resource):
         email = request.authorization.username
         user_id = models.User.query.filter_by(email=email).first().id
 
-        existing_friend = models.Friend.query.filter_by(id=user_id,friend_id=friend_id)
+        existing_friend = models.Friend.query.filter_by(id=user_id, friend_id=friend_id)
         friend_user_row = models.User.query.filter_by(id=friend_id).first()
 
         if (not existing_friend.count() > 0) and friend_id != user_id:
@@ -274,6 +284,43 @@ class Friend(Resource):
 
         return friend_user_rows
 
+class ImOpen(Resource):
+
+    # im open
+    def get(self, lock_id):
+        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        if database_lock_id.count() > 0:
+
+            lock = database_lock_id.first()
+            if lock.requested_open is True:
+                lock.actually_open = True
+                lock.requested_open = False
+                db.session.commit()
+                return True, 202
+            else:
+                lock.actually_open = False
+                db.session.commit()
+                return False, 200
+        else:
+            return False, 404
+
+class ImClosed(Resource):
+    # im closed
+    def get(self, lock_id):
+        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        if database_lock_id.count() > 0:
+
+            lock = database_lock_id.first()
+            if lock.requested_open is False:
+                lock.actually_open = False
+                db.session.commit()
+                return False, 202
+            else:
+                lock.actually_open = True
+                db.session.commit()
+                return True, 200
+        else:
+            return False, 404
 
 def get_user_id():
     email = request.authorization.username
@@ -285,10 +332,16 @@ def get_user_id():
 api.add_resource(HelloWorld, '/hello')
 api.add_resource(ProtectedResource, '/protected-resource')
 # new endpoints
+
+api.add_resource(ImOpen, '/im-open/<int:lock_id>')
+api.add_resource(ImClosed, '/im-closed/<int:lock_id>')
+
+
 api.add_resource(UserList, '/user')
 api.add_resource(Me, '/me')
 api.add_resource(UserDetail, '/user/<int:user_id>')
 api.add_resource(LockList, '/lock')
+api.add_resource(LockDetail, '/lock/<int:lock_id>')
 api.add_resource(OpenLock, '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close/<int:lock_id>')
 api.add_resource(Status, '/status/<int:lock_id>')

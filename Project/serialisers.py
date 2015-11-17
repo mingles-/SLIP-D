@@ -12,5 +12,6 @@ user_fields = {
 lock_fields = {
     'id':   fields.Integer,
     'name': fields.String,
-    'locked':   fields.Boolean,
+    'requested_open':   fields.Boolean,
+    'actually_open':   fields.Boolean,
 }
