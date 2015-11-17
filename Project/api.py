@@ -289,8 +289,6 @@ class ImOpen(Resource):
                 db.session.commit()
                 return True, 202
             else:
-                lock.actually_open = False
-                db.session.commit()
                 return False, 200
         else:
             return False, 404
