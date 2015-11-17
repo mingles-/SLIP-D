@@ -275,7 +275,10 @@ class Friend(Resource):
         return friend_user_rows
 
 
-
+def get_user_id():
+    email = request.authorization.username
+    user_id = models.User.query.filter_by(email=email).first().id
+    return user_id
 
 
 # testing endpoints
