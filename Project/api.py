@@ -289,6 +289,8 @@ class ImOpen(Resource):
                 db.session.commit()
                 return True, 202
             else:
+                lock.actually_open = False
+                db.session.commit()
                 return False, 200
         else:
             return False, 404
@@ -300,12 +302,14 @@ class ImClosed(Resource):
         if database_lock_id.count() > 0:
 
             lock = database_lock_id.first()
-            if lock.requested_open is False:
+            if lock.requested_open is True:
                 lock.actually_open = False
-                lock.requested_open = True
+                lock.requested_open = False
                 db.session.commit()
                 return False, 202
             else:
+                lock.actually_open = True
+                db.session.commit()
                 return True, 200
         else:
             return False, 404
@@ -319,7 +323,6 @@ def get_user_id():
 
 
 
-
 # testing endpoints
 api.add_resource(HelloWorld, '/hello')
 api.add_resource(ProtectedResource, '/protected-resource')
@@ -328,7 +331,7 @@ api.add_resource(ProtectedResource, '/protected-resource')
 api.add_resource(ImOpen, '/im-open/<int:lock_id>')
 api.add_resource(ImClosed, '/im-closed/<int:lock_id>')
 
-#api.add_resource(FriendLocks, '/friend-lock')
+# api.add_resource(FriendLocks, '/friend-lock')
 
 api.add_resource(UserList, '/user')
 api.add_resource(Me, '/me')
