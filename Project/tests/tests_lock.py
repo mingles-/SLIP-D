@@ -6,22 +6,22 @@ from Project.tests.base_test import BaseTest
 __author__ = 'mingles'
 
 
-class SmartLockTestCase(BaseTest):
+class SmartLockTestLock(BaseTest):
 
     def setUp(self):
-        super(SmartLockTestCase, self).setUp()
+        super(SmartLockTestLock, self).setUp()
         self.app.post('/user', data=dict(email="test@mail.com", password="python"))
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
 
     def tearDown(self):
-        super(SmartLockTestCase, self).tearDown()
+        super(SmartLockTestLock, self).tearDown()
 
     def test_register_lock_success(self):
         """Successfully register a lock"""
         response = self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124, lock_name="123"))
         self.assertEqual(201, response.status_code)
         self.assertEqual(json.loads(response.data)["id"], 124)
-        self.assertEqual(json.loads(response.data)["locked"], True)
+        self.assertEqual(json.loads(response.data)["requested_open"], False)
 
     def test_register_lock_bad_auth(self):
         """Fail an unauthorized user """
@@ -72,28 +72,23 @@ class SmartLockTestCase(BaseTest):
     def test_open_and_close_lock(self):
         self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         database_lock_id = Lock.query.filter_by(id=123).first()
-        self.assertEqual(database_lock_id.locked, False)
-        self.app.put('/close/123', headers=self.auth_header("test@mail.com", "python"))
-        database_lock_id = Lock.query.filter_by(id=123).first()
-        self.assertEqual(database_lock_id.locked, True)
+        self.assertEqual(database_lock_id.requested_open, True)
 
     def test_status_closed(self):
         """Check status of locked lock"""
         response = self.app.get('/status/123')
-        self.assertEqual(response.data, "true\n")
+        self.assertEqual(response.data, "false\n")
 
     def test_status_open(self):
         """Check status of unlocked lock"""
         self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
         response = self.app.get('/status/123')
-        self.assertEqual(response.data, "false\n")
+        self.assertEqual(response.data, "true\n")
 
     def test_status_open_closed(self):
         """Check status of an unlocked, then relocked lock"""
-        self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
-        self.app.put('/close/123', headers=self.auth_header("test@mail.com", "python"))
-        response = self.app.get('/status/123')
-        self.assertEqual(response.data, "true\n")
+        response = self.app.put('/open/123', headers=self.auth_header("test@mail.com", "python"))
+        self.assertEqual(json.loads(response.data)["requested_open"], True)
 
 
 if __name__ == '__main__':

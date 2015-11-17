@@ -25,18 +25,6 @@ class SmartLockTestCase(BaseTest):
     def tearDown(self):
         super(SmartLockTestCase, self).tearDown()
 
-    def test_checkLockGood(self):
-        """Open closed lock and check if open"""
-        lock_closed = True
-        self.app.put('/lock/123', headers=self.auth_header("test@mail.com", "python"))
-        self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))
-
-        locks = json.loads((self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))).data)
-        for lock in locks:
-            if lock['id'] == 123:
-                lock_closed = lock['locked']
-
-        self.assertEqual(lock_closed, False)
 
     def test_checkClosedLock(self):
         """Check created Lock is automatically closed"""
@@ -47,9 +35,9 @@ class SmartLockTestCase(BaseTest):
         locks = json.loads((self.app.get('/lock', headers=self.auth_header("test@mail.com", "python"))).data)
         for lock in locks:
             if lock['id'] == 124:
-                lock_closed = lock['locked']
+                lock_closed = lock['requested_open']
 
-        self.assertEqual(lock_closed, True)
+        self.assertEqual(lock_closed, False)
 
     def test_bad_credentials(self):
         """Check bad credentials are rejected"""

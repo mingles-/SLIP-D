@@ -6,10 +6,10 @@ from Project.tests.base_test import BaseTest
 __author__ = 'mingles'
 
 
-class SmartLockTestCase(BaseTest):
+class SmartLockTestFriend(BaseTest):
 
     def setUp(self):
-        super(SmartLockTestCase, self).setUp()
+        super(SmartLockTestFriend, self).setUp()
         user_reg = self.app.post('/user', data=dict(email="test@mail.com", password="python"))
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=123, lock_name="123"))
 
@@ -23,7 +23,7 @@ class SmartLockTestCase(BaseTest):
         self.assertEqual(response.status_code, 201)
 
     def tearDown(self):
-        super(SmartLockTestCase, self).tearDown()
+        super(SmartLockTestFriend, self).tearDown()
 
     def test_already_registered_friend(self):
         response = self.app.post('/friend', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id))
