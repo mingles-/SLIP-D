@@ -53,7 +53,7 @@ class OpenWaitingDoneTestCase(BaseTest):
 
         # App requests api to close lock
         # requested_open = False
-        response = self.app.put('/open/134', headers=self.auth_header("test", "python"))
+        response = self.app.put('/close/134', headers=self.auth_header("test", "python"))
         self.assertEqual(json.loads(response.data)["requested_open"], False)
         self.assertEqual(json.loads(response.data)['actually_open'], True)
 
@@ -62,7 +62,7 @@ class OpenWaitingDoneTestCase(BaseTest):
         self.assertEqual(200, response.status_code)
 
         # lock is still open
-        response = self.app.put('/lock/134', headers=self.auth_header("test", "python"))
+        response = self.app.get('/lock/134', headers=self.auth_header("test", "python"))
         self.assertEqual(json.loads(response.data)["requested_open"], False)
         self.assertEqual(json.loads(response.data)['actually_open'], True)
 
