@@ -102,12 +102,14 @@ def change_lock_state(lock_id, new_state):
         if users_with_lock is not None:
             lock_row = models.Lock.query.filter_by(id=lock_id).first()
             for user_with_lock in users_with_lock:
+
                 if user_id == user_with_lock.user_id:
                     lock_row.requested_open = new_state
                     db.session.commit()
                     return models.Lock.query.filter_by(id=lock_id).first(), 200
-                else:
-                    return models.Lock.query.filter_by(id=lock_id).first(), 401
+
+            return models.Lock.query.filter_by(id=lock_id).first(), 401
+
     return None, 404
 
 
@@ -264,6 +266,7 @@ class Friend(Resource):
 
             db.session.query(models.Friend).filter(models.Friend.id == user_id,
                                                    models.Friend.friend_id == friend_id).delete()
+            db.session.commit()
 
             return self.get_users_friends(user_id), 200
 
@@ -343,14 +346,14 @@ class FriendLocks(Resource):
         lock_id = request.form['lock_id']
         user_id = get_user_id()
 
-        # if friends and user owns lock
-        are_friends = db.session.query(
-            exists().where(and_(models.Friend.id == user_id, models.Friend.friend_id == friend_id))).scalar()
+        are_friends = models.Friend.query.filter_by(id=user_id, friend_id=friend_id).count() > 0
 
-        user_owns_lock = False
+
         lock_exists = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
         if lock_exists.count() > 0:
             user_owns_lock = lock_exists.first().is_owner
+        else:
+            user_owns_lock = False
 
         if are_friends is True and user_owns_lock is True:
             user = models.User.query.filter_by(id=friend_id).first()
@@ -361,6 +364,32 @@ class FriendLocks(Resource):
             return True, 201
         else:
             return False, 400
+
+    def delete(self):
+        friend_id = request.form['friend_id']
+        lock_id = request.form['lock_id']
+        user_id = get_user_id()
+
+        lock_exists = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
+        if lock_exists.count() > 0:
+            user_owns_lock = lock_exists.first().is_owner
+        else:
+            user_owns_lock = False
+
+        friend_assigned_to_lock = models.UserLock.query.filter_by(user_id=friend_id, lock_id=lock_id, is_owner=False).count() > 0
+
+        if friend_assigned_to_lock and user_owns_lock:
+
+            db.session.query(models.UserLock).filter(models.UserLock.user_id == friend_id,
+                                                   models.UserLock.lock_id == lock_id).delete()
+            db.session.commit()
+
+            return True, 200
+        else:
+            return False, 401
+
+
+
 
 
 # testing endpoints
