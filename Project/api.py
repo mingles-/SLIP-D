@@ -69,7 +69,7 @@ class OpenLock(Resource):
 
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        return change_lock_state(lock_id)
+        return change_lock_state(lock_id, True)
 
 
 class CloseLock(Resource):
@@ -80,7 +80,7 @@ class CloseLock(Resource):
 
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        return change_lock_state(lock_id)
+        return change_lock_state(lock_id, False)
 
 
 def is_user_in_db(user):
@@ -91,7 +91,7 @@ def is_user_in_db(user):
         return False
 
 
-def change_lock_state(lock_id):
+def change_lock_state(lock_id, new_state):
 
     if lock_id is not None:
 
@@ -103,7 +103,7 @@ def change_lock_state(lock_id):
             lock_row = models.Lock.query.filter_by(id=lock_id).first()
             for user_with_lock in users_with_lock:
                 if user_id == user_with_lock.user_id:
-                    lock_row.requested_open = True
+                    lock_row.requested_open = new_state
                     db.session.commit()
                     return models.Lock.query.filter_by(id=lock_id).first(), 200
                 else:
