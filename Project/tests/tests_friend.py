@@ -64,7 +64,33 @@ class SmartLockTestFriend(BaseTest):
         response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=456))
         self.assertEqual(response.status_code, 400)
 
+    def test_add_and_remove_friend_to_lock(self):
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 201)
+        response = self.app.delete('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 200)
 
+    def test_check_friend_open_lock(self):
+
+        # fail to open lock on friends account
+        response = self.app.put('/open/123', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(401, response.status_code)
+
+        # add friend
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 201)
+
+        # successfully open lock as friend
+        response = self.app.put('/open/123', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(200, response.status_code)
+
+        # delete friend
+        response = self.app.delete('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 200)
+
+        # fail to open lock on friends account
+        response = self.app.put('/open/123', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(401, response.status_code)
 
 
 if __name__ == '__main__':

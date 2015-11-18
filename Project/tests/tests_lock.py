@@ -55,7 +55,7 @@ class SmartLockTestLock(BaseTest):
     def test_open_lock_bad_id(self):
         """Ensure that good user credentials fail with the an non existing lock"""
         response = self.app.put('/open/124', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(401, response.status_code)
 
     def test_open_lock_nae_lock(self):
         """Ensure that good user credentials are not accepted without a lock"""
