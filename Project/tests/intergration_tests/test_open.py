@@ -30,7 +30,6 @@ class OpenWaitingDoneTestCase(BaseTest):
 
         # App polls api and responds actually_open false
         response = self.app.get('/lock/134', headers=self.auth_header("test", "python"))
-
         self.assertEqual(json.loads(response.data)["requested_open"], True)
         self.assertEqual(json.loads(response.data)['actually_open'], False)
 
@@ -40,14 +39,33 @@ class OpenWaitingDoneTestCase(BaseTest):
 
         # Lock polls im_open
         response = self.app.get('/im-open/134', headers=self.auth_header("test", "python"))
+        self.assertEqual(202, response.status_code)
 
-        # actually_open = True, requested_open = False
+        # actually_open = True, requested_open = True
         # App polls api and responds actually_open true
         response = self.app.get('/lock/134', headers=self.auth_header("test", "python"))
-        self.assertEqual(json.loads(response.data)['requested_open'], False)
+        self.assertEqual(json.loads(response.data)['requested_open'], True)
         self.assertEqual(json.loads(response.data)['actually_open'], True)
 
-        # short time later the lock closes
+        # Lock polls im_open and is told all is fine
+        response = self.app.get('/im-open/134', headers=self.auth_header("test", "python"))
+        self.assertEqual(202, response.status_code)
+
+        # App requests api to close lock
+        # requested_open = False
+        response = self.app.put('/open/134', headers=self.auth_header("test", "python"))
+        self.assertEqual(json.loads(response.data)["requested_open"], False)
+        self.assertEqual(json.loads(response.data)['actually_open'], True)
+
+        # short time later the lock is told to close
+        response = self.app.get('/im-open/134', headers=self.auth_header("test", "python"))
+        self.assertEqual(200, response.status_code)
+
+        # lock is still open
+        response = self.app.put('/lock/134', headers=self.auth_header("test", "python"))
+        self.assertEqual(json.loads(response.data)["requested_open"], False)
+        self.assertEqual(json.loads(response.data)['actually_open'], True)
+
         response = self.app.get('/im-closed/134', headers=self.auth_header("test", "python"))
         self.assertEqual(202, response.status_code)
 

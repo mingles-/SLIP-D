@@ -16,8 +16,12 @@ class SmartLockTestFriend(BaseTest):
         user2_reg = self.register_user(username="test2@mail.com", password="python")
         self.app.post('/lock', headers=self.auth_header("test2@mail.com", "python"), data=dict(lock_id=456, lock_name="456"))
 
+        user3_reg = self.register_user(username="test3@mail.com", password="python")
+        self.app.post('/lock', headers=self.auth_header("test3@mail.com", "python"), data=dict(lock_id=789, lock_name="789"))
+
         self.user_id = json.loads(user_reg.data)['id']
         self.user2_id = json.loads(user2_reg.data)['id']
+        self.user3_id = json.loads(user3_reg.data)['id']
 
         response = self.app.post('/friend', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id))
         self.assertEqual(response.status_code, 201)
@@ -48,7 +52,17 @@ class SmartLockTestFriend(BaseTest):
         friend_id = json.loads(response.data)
         self.assertEqual(friend_id, [])
 
+    def test_add_friend_to_lock(self):
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 201)
 
+    def test_fail_adding_non_friend(self):
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user3_id, lock_id=123))
+        self.assertEqual(response.status_code, 400)
+
+    def test_fail_not_own_lock(self):
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=456))
+        self.assertEqual(response.status_code, 400)
 
 
 
