@@ -67,7 +67,7 @@ class OpenLock(Resource):
 
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        return change_lock_state(lock_id, True)
+        return change_lock_state(lock_id)
 
 
 class CloseLock(Resource):
@@ -76,8 +76,9 @@ class CloseLock(Resource):
     """
     decorators = [requires_auth]
 
+    @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        return change_lock_state(lock_id, False)
+        return change_lock_state(lock_id)
 
 
 def is_user_in_db(user):
@@ -89,7 +90,7 @@ def is_user_in_db(user):
 
 
 
-def change_lock_state(lock_id, new_state):
+def change_lock_state(lock_id):
 
     if lock_id is not None:
 
@@ -101,7 +102,7 @@ def change_lock_state(lock_id, new_state):
             lock_row = models.Lock.query.filter_by(id=lock_id).first()
             for user_with_lock in users_with_lock:
                 if user_id == user_with_lock.user_id:
-                    lock_row.requested_open = new_state
+                    lock_row.requested_open = True
                     db.session.commit()
                     return models.Lock.query.filter_by(id=lock_id).first(), 200
                 else:
@@ -283,15 +284,15 @@ class ImOpen(Resource):
         if database_lock_id.count() > 0:
 
             lock = database_lock_id.first()
-            if lock.requested_open is True:
-                lock.actually_open = True
-                lock.requested_open = False
+            if lock.requested_open is True and lock.actually_open is False: # Change is requested
+                lock.actually_open = True   # Open the lock
+                lock.requested_open = False # Change has been made
                 db.session.commit()
-                return True, 202
+                return lock.actually_open, 202
+            elif lock.requested_open is True and lock.actually_open is True:
+                return lock.actually_open, 200
             else:
-                lock.actually_open = False
-                db.session.commit()
-                return False, 200
+                return lock.actually_open, 202
         else:
             return False, 404
 
@@ -302,15 +303,15 @@ class ImClosed(Resource):
         if database_lock_id.count() > 0:
 
             lock = database_lock_id.first()
-            if lock.requested_open is True:
-                lock.actually_open = False
-                lock.requested_open = False
+            if lock.requested_open is True and lock.actually_open is True: # Change is requested
+                lock.actually_open = False   # Open the lock
+                lock.requested_open = False # Change has been made
                 db.session.commit()
-                return False, 202
+                return lock.actually_open, 202
+            elif lock.requested_open is True and lock.actually_open is False:
+                return lock.actually_open, 200
             else:
-                lock.actually_open = True
-                db.session.commit()
-                return True, 200
+                return lock.actually_open, 202
         else:
             return False, 404
 
