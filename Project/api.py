@@ -3,12 +3,13 @@ from functools import wraps
 from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
 import sys
+from sqlalchemy import exists, and_
 from Project import models, serialisers
 from Project.app import db, app
 from Project.auth import user_datastore
 from flask.ext.restplus import Api, Resource, fields, marshal_with
-sys.setrecursionlimit(1000000)
 
+sys.setrecursionlimit(1000000)
 
 api = Api(app)
 ns = api.namespace('smartlock', description='User operations')
@@ -42,6 +43,7 @@ def requires_auth(f):
         return f(*args, **kwargs)
 
     return decorated
+
 
 @api.doc(responses={200: 'yas'})
 class HelloWorld(Resource):
@@ -87,7 +89,6 @@ def is_user_in_db(user):
         return True
     else:
         return False
-
 
 
 def change_lock_state(lock_id):
@@ -147,6 +148,7 @@ class UserDetail(Resource):
         else:
             return user_id, 404
 
+
 class Me(Resource):
     decorators = [requires_auth]
     # return user information
@@ -162,10 +164,12 @@ class Me(Resource):
 
 class LockDetail(Resource):
     decorators = [requires_auth]
+
     @marshal_with(serialisers.lock_fields)
     def get(self, lock_id):
         lock = models.Lock.query.filter_by(id=lock_id).first()
         return lock
+
 
 class LockList(Resource):
     decorators = [requires_auth]
@@ -175,7 +179,6 @@ class LockList(Resource):
         email = request.authorization.username
         user = models.User.query.filter_by(email=email).first()
         return list(user.locks)
-
 
 
     # register lock
@@ -203,7 +206,6 @@ class LockList(Resource):
 
 
 class Status(Resource):
-
     def get(self, lock_id):
         database_lock_id = models.Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
@@ -214,6 +216,7 @@ class Status(Resource):
                 return state, 200
         else:
             return False, 404
+
 
 class Friend(Resource):
     decorators = [requires_auth]
@@ -259,7 +262,8 @@ class Friend(Resource):
 
         if existing_friend.count() > 0:
 
-            db.session.query(models.Friend).filter(models.Friend.id==user_id, models.Friend.friend_id==friend_id).delete()
+            db.session.query(models.Friend).filter(models.Friend.id == user_id,
+                                                   models.Friend.friend_id == friend_id).delete()
 
             return self.get_users_friends(user_id), 200
 
@@ -276,6 +280,7 @@ class Friend(Resource):
             friend_user_rows.append(models.User.query.filter_by(id=friend_id.friend_id).first())
 
         return friend_user_rows
+
 
 class ImOpen(Resource):
     # im open
@@ -296,6 +301,7 @@ class ImOpen(Resource):
         else:
             return False, 404
 
+
 class ImClosed(Resource):
     # im closed
     def get(self, lock_id):
@@ -315,13 +321,40 @@ class ImClosed(Resource):
         else:
             return False, 404
 
+
 def get_user_id():
     email = request.authorization.username
     user_id = models.User.query.filter_by(email=email).first().id
     return user_id
 
 
+class FriendLocks(Resource):
+    decorators = [requires_auth]
 
+    # add a friend to one of your locks
+    def post(self):
+        friend_id = request.form['friend_id']
+        lock_id = request.form['lock_id']
+        user_id = get_user_id()
+
+        # if friends and user owns lock
+        are_friends = db.session.query(
+            exists().where(and_(models.Friend.id == user_id, models.Friend.friend_id == friend_id))).scalar()
+
+        user_owns_lock = False
+        lock_exists = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
+        if lock_exists.count() > 0:
+            user_owns_lock = lock_exists.first().is_owner
+
+        if are_friends is True and user_owns_lock is True:
+            user = models.User.query.filter_by(id=friend_id).first()
+            lock = models.Lock.query.filter_by(id=lock_id).first()
+            user_lock = models.UserLock(user, lock, is_owner=False)
+            db.session.add(user_lock)
+            db.session.commit()
+            return True, 201
+        else:
+            return False, 400
 
 
 # testing endpoints
@@ -331,8 +364,7 @@ api.add_resource(ProtectedResource, '/protected-resource')
 
 api.add_resource(ImOpen, '/im-open/<int:lock_id>')
 api.add_resource(ImClosed, '/im-closed/<int:lock_id>')
-
-# api.add_resource(FriendLocks, '/friend-lock')
+api.add_resource(FriendLocks, '/friend-lock')
 
 api.add_resource(UserList, '/user')
 api.add_resource(Me, '/me')
