@@ -9,6 +9,8 @@ from Project.app import db, app
 from Project.auth import user_datastore
 from flask.ext.restplus import Api, Resource, fields, marshal_with
 
+from Project.models import User, UserLock, Lock, Friend
+
 sys.setrecursionlimit(1000000)
 
 api = Api(app)
@@ -19,7 +21,7 @@ def check_auth(email, password):
     """
     This function is called to check if a username & password combination is valid.
     """
-    users_with_that_email = models.User.query.filter_by(email=email)
+    users_with_that_email = User.query.filter_by(email=email)
     if users_with_that_email.count() > 0:
         db_password = users_with_that_email[0].password
         return verify_password(password, db_password)
@@ -84,7 +86,7 @@ class CloseLock(Resource):
 
 
 def is_user_in_db(user):
-    email = models.User.query.filter_by(email=user)
+    email = User.query.filter_by(email=user)
     if email.count() > 0:
         return True
     else:
@@ -96,35 +98,40 @@ def change_lock_state(lock_id, new_state):
     if lock_id is not None:
 
         email = request.authorization.username
-        user_id = models.User.query.filter_by(email=email).first().id
-        users_with_lock = models.UserLock.query.filter_by(lock_id=lock_id)
+        user_id = User.query.filter_by(email=email).first().id
+        users_with_lock = UserLock.query.filter_by(lock_id=lock_id)
 
         if users_with_lock is not None:
-            lock_row = models.Lock.query.filter_by(id=lock_id).first()
+            lock_row = Lock.query.filter_by(id=lock_id).first()
             for user_with_lock in users_with_lock:
 
                 if user_id == user_with_lock.user_id:
                     lock_row.requested_open = new_state
                     db.session.commit()
-                    return models.Lock.query.filter_by(id=lock_id).first(), 200
+                    return Lock.query.filter_by(id=lock_id).first(), 200
 
-            return models.Lock.query.filter_by(id=lock_id).first(), 401
+            return Lock.query.filter_by(id=lock_id).first(), 401
 
     return None, 404
 
 
 class UserList(Resource):
-    # gets list of users
     @requires_auth
     @marshal_with(serialisers.user_fields)
     def get(self):
-        users = models.User.query.all()
-        return users, 200
+        """ Gets list of users """
+        users = db.session.query(User)
 
+        # optionally allow the user list to be filter by lock id
+        lock_id = request.args.get('lock_id')
+        if lock_id:
+            users = users.filter(User.locks.any(id=lock_id))
 
-    # register user
+        return users.all(), 200
+
     @marshal_with(serialisers.user_fields)
     def post(self):
+        """ Register User """
         email = request.form['email']
         password = encrypt_password(request.form['password'])
         first_name = "" + request.form['first_name']
@@ -133,10 +140,10 @@ class UserList(Resource):
         if not is_user_in_db(email):
             user_datastore.create_user(email=email, password=password, first_name=first_name, last_name=last_name)
             db.session.commit()
-            new_user = models.User.query.filter_by(email=email).first()
+            new_user = User.query.filter_by(email=email).first()
             return new_user, 201
 
-        return models.User.query.filter_by(email=email).first(), 406
+        return User.query.filter_by(email=email).first(), 406
 
 
 class UserDetail(Resource):
@@ -144,7 +151,7 @@ class UserDetail(Resource):
     # return user information
     @marshal_with(serialisers.user_fields)
     def get(self, user_id):
-        user_exists = models.User.query.filter_by(id=user_id)
+        user_exists = User.query.filter_by(id=user_id)
         if user_exists > 0:
             return user_exists.first(), 200
         else:
@@ -157,7 +164,7 @@ class Me(Resource):
     @marshal_with(serialisers.user_fields)
     def get(self):
         email = request.authorization.username
-        user_exists = models.User.query.filter_by(email=email)
+        user_exists = User.query.filter_by(email=email)
         if user_exists > 0:
             return user_exists.first(), 200
         else:
@@ -169,7 +176,7 @@ class LockDetail(Resource):
 
     @marshal_with(serialisers.lock_fields)
     def get(self, lock_id):
-        lock = models.Lock.query.filter_by(id=lock_id).first()
+        lock = Lock.query.filter_by(id=lock_id).first()
         return lock
 
 
@@ -179,7 +186,7 @@ class LockList(Resource):
     @marshal_with(serialisers.lock_fields)
     def get(self):
         email = request.authorization.username
-        user = models.User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email).first()
         return list(user.locks)
 
 
@@ -190,26 +197,26 @@ class LockList(Resource):
         lock_id = request.form['lock_id']
         email = request.authorization.username
         # add in many to many table
-        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        database_lock_id = Lock.query.filter_by(id=lock_id)
 
         if database_lock_id.count() > 0:
             return lock_id, 406
         else:
-            user = models.User.query.filter_by(email=email).first()
-            lock = models.Lock(id=lock_id, name=lock_name, requested_open=False, actually_open=False)
+            user = User.query.filter_by(email=email).first()
+            lock = Lock(id=lock_id, name=lock_name, requested_open=False, actually_open=False)
 
-            user_lock = models.UserLock(user, lock, is_owner=True)
+            user_lock = UserLock(user, lock, is_owner=True)
 
             db.session.add(lock)
             db.session.add(user_lock)
             db.session.commit()
-            lock = models.Lock.query.filter_by(id=lock_id)
+            lock = Lock.query.filter_by(id=lock_id)
             return lock.first(), 201
 
 
 class Status(Resource):
     def get(self, lock_id):
-        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        database_lock_id = Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
             state = database_lock_id.first().requested_open
             if state:
@@ -220,7 +227,7 @@ class Status(Resource):
             return False, 404
 
 
-class Friend(Resource):
+class FriendList(Resource):
     decorators = [requires_auth]
 
     @marshal_with(serialisers.user_fields)
@@ -228,14 +235,14 @@ class Friend(Resource):
 
         friend_id = int(request.form['friend_id'])
         email = request.authorization.username
-        user_id = models.User.query.filter_by(email=email).first().id
+        user_id = User.query.filter_by(email=email).first().id
 
-        existing_friend = models.Friend.query.filter_by(id=user_id, friend_id=friend_id)
-        friend_user_row = models.User.query.filter_by(id=friend_id).first()
+        existing_friend = Friend.query.filter_by(id=user_id, friend_id=friend_id)
+        friend_user_row = User.query.filter_by(id=friend_id).first()
 
         if (not existing_friend.count() > 0) and friend_id != user_id:
 
-            friendship = models.Friend(id=user_id, friend_id=friend_id)
+            friendship = Friend(id=user_id, friend_id=friend_id)
 
             db.session.add(friendship)
             db.session.commit()
@@ -250,7 +257,7 @@ class Friend(Resource):
     def get(self):
 
         email = request.authorization.username
-        user_id = models.User.query.filter_by(email=email).first().id
+        user_id = User.query.filter_by(email=email).first().id
 
         return self.get_users_friends(user_id), 200
 
@@ -258,14 +265,14 @@ class Friend(Resource):
     def delete(self):
 
         email = request.authorization.username
-        user_id = models.User.query.filter_by(email=email).first().id
+        user_id = User.query.filter_by(email=email).first().id
         friend_id = int(request.form['friend_id'])
-        existing_friend = models.Friend.query.filter_by(id=user_id, friend_id=friend_id)
+        existing_friend = Friend.query.filter_by(id=user_id, friend_id=friend_id)
 
         if existing_friend.count() > 0:
 
-            db.session.query(models.Friend).filter(models.Friend.id == user_id,
-                                                   models.Friend.friend_id == friend_id).delete()
+            db.session.query(Friend).filter(Friend.id == user_id,
+                                                   Friend.friend_id == friend_id).delete()
             db.session.commit()
 
             return self.get_users_friends(user_id), 200
@@ -277,10 +284,10 @@ class Friend(Resource):
 
     @staticmethod
     def get_users_friends(user_id):
-        friend_ids = models.Friend.query.filter_by(id=user_id)
+        friend_ids = Friend.query.filter_by(id=user_id)
         friend_user_rows = []
         for friend_id in friend_ids:
-            friend_user_rows.append(models.User.query.filter_by(id=friend_id.friend_id).first())
+            friend_user_rows.append(User.query.filter_by(id=friend_id.friend_id).first())
 
         return friend_user_rows
 
@@ -288,7 +295,7 @@ class Friend(Resource):
 class ImOpen(Resource):
     # im open
     def get(self, lock_id):
-        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        database_lock_id = Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
 
             lock = database_lock_id.first()
@@ -311,7 +318,7 @@ class ImOpen(Resource):
 class ImClosed(Resource):
     # im closed
     def get(self, lock_id):
-        database_lock_id = models.Lock.query.filter_by(id=lock_id)
+        database_lock_id = Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
 
             lock = database_lock_id.first()
@@ -333,7 +340,7 @@ class ImClosed(Resource):
 
 def get_user_id():
     email = request.authorization.username
-    user_id = models.User.query.filter_by(email=email).first().id
+    user_id = User.query.filter_by(email=email).first().id
     return user_id
 
 
@@ -346,19 +353,19 @@ class FriendLocks(Resource):
         lock_id = request.form['lock_id']
         user_id = get_user_id()
 
-        are_friends = models.Friend.query.filter_by(id=user_id, friend_id=friend_id).count() > 0
+        are_friends = Friend.query.filter_by(id=user_id, friend_id=friend_id).count() > 0
 
 
-        lock_exists = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
+        lock_exists = UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
         if lock_exists.count() > 0:
             user_owns_lock = lock_exists.first().is_owner
         else:
             user_owns_lock = False
 
         if are_friends is True and user_owns_lock is True:
-            user = models.User.query.filter_by(id=friend_id).first()
-            lock = models.Lock.query.filter_by(id=lock_id).first()
-            user_lock = models.UserLock(user, lock, is_owner=False)
+            user = User.query.filter_by(id=friend_id).first()
+            lock = Lock.query.filter_by(id=lock_id).first()
+            user_lock = UserLock(user, lock, is_owner=False)
             db.session.add(user_lock)
             db.session.commit()
             return True, 201
@@ -370,18 +377,18 @@ class FriendLocks(Resource):
         lock_id = request.form['lock_id']
         user_id = get_user_id()
 
-        lock_exists = models.UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
+        lock_exists = UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)
         if lock_exists.count() > 0:
             user_owns_lock = lock_exists.first().is_owner
         else:
             user_owns_lock = False
 
-        friend_assigned_to_lock = models.UserLock.query.filter_by(user_id=friend_id, lock_id=lock_id, is_owner=False).count() > 0
+        friend_assigned_to_lock = UserLock.query.filter_by(user_id=friend_id, lock_id=lock_id, is_owner=False).count() > 0
 
         if friend_assigned_to_lock and user_owns_lock:
 
-            db.session.query(models.UserLock).filter(models.UserLock.user_id == friend_id,
-                                                   models.UserLock.lock_id == lock_id).delete()
+            db.session.query(UserLock).filter(UserLock.user_id == friend_id,
+                                                   UserLock.lock_id == lock_id).delete()
             db.session.commit()
 
             return True, 200
@@ -409,6 +416,6 @@ api.add_resource(LockDetail, '/lock/<int:lock_id>')
 api.add_resource(OpenLock, '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close/<int:lock_id>')
 api.add_resource(Status, '/status/<int:lock_id>')
-api.add_resource(Friend, '/friend')
+api.add_resource(FriendList, '/friend')
 
 
