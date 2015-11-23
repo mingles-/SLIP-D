@@ -31,6 +31,41 @@ class LockListTestCase(BaseTest):
         self.assertEqual(len(users), 1)
         self.assertEqual(users[0]["email"], "tester@mail.com")
 
+    def test_add_is_friend_false(self):
+        """ Ensure that a user has is_friend field """
+        # Given
+        self.register_user(username="tester@mail.com", password="python")
+
+        # When
+        response = self.app.get(
+            '/user',
+            headers=self.auth_header("tester@mail.com", "python")
+        )
+
+        # Then
+        self.assertEqual(200, response.status_code)
+        users = json.loads(response.data)
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0]["is_friend"], False)
+
+    def test_add_is_friend_true(self):
+        """ Ensure that a user has is_friend field """
+        # Given
+        me = self.register_user(username="tester@mail.com", password="python")
+        self.app.post('/friend', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=json.loads(me.data)['id']))
+
+        # When
+        response = self.app.get(
+            '/user',
+            headers=self.auth_header("tester@mail.com", "python")
+        )
+
+        # Then
+        self.assertEqual(200, response.status_code)
+        users = json.loads(response.data)
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0]["is_friend"], False)
+
 
 if __name__ == '__main__':
     unittest.main()
