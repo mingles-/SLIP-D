@@ -112,8 +112,7 @@ class SmartLockTestFriend(BaseTest):
         self.assertEqual(response.status_code, 201)
 
         response = self.app.get('/friend', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(123, json.loads(response.data)[0]['your_locks'][0])
-        print response.data
+        self.assertEqual(123, json.loads(response.data)[0]['your_locks'][0]['id'])
 
 
 if __name__ == '__main__':

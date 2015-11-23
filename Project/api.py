@@ -4,6 +4,8 @@ from flask import request, Response
 from flask.ext.security.utils import encrypt_password, verify_password
 import sys
 from sqlalchemy import exists, and_
+from sqlalchemy.orm import aliased
+
 from Project import models, serialisers
 from Project.app import db, app
 from Project.auth import user_datastore
@@ -270,13 +272,47 @@ class FriendList(Resource):
 
             return add_is_friend(friend_user_row, request), 401
 
-    @marshal_with(serialisers.user_fields)
+    def add_related_locks(self, users, request):
+        """ For each friend, add all the locks that they are members of and you are the owner of """
+        my_id = User.query.filter_by(email=request.authorization.username).first().id
+        # get all he locks where I am the owner
+        ul1 = aliased(UserLock, name='ul1')
+        ul2 = aliased(UserLock, name='ul2')
+        l1 = aliased(Lock, name='l1')
+        l2 = aliased(Lock, name='l2')
+
+        my_locks_subquery = db.session.query(l1.id).filter(
+            db.session.query(ul1).filter(
+                ul1.is_owner,
+                ul1.user_id == my_id,
+                ul1.lock_id == l1.id
+            ).exists()
+        ).subquery()
+
+        for user in users:
+            # get all the locks that a friend is in
+            user.your_locks = db.session.query(l2).filter(
+                db.session.query(ul2).filter(
+                    ul2.user_id == user.id,
+                    ul2.lock_id == l1.id
+                ).exists(),
+                l2.id.in_(my_locks_subquery)
+            ).all()
+
+        return users
+
+
+    @marshal_with(serialisers.user_fields_with_locks)
     def get(self):
 
         email = request.authorization.username
         user_id = User.query.filter_by(email=email).first().id
 
-        return add_is_friend(self.get_users_friends(user_id), request), 200
+        users = self.get_users_friends(user_id)
+        users = self.add_related_locks(users, request)
+        users = add_is_friend(users, request)
+
+        return users, 200
 
     # @marshal_with(serialisers.user_fields)
     def delete(self):

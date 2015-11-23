@@ -6,6 +6,14 @@ from Project.models import Friend, User
 __author__ = 'mingles'
 from flask_restful import fields
 
+lock_fields = {
+    'id':   fields.Integer,
+    'name': fields.String,
+    'owner_id': fields.Integer,
+    'requested_open':   fields.Boolean,
+    'actually_open':   fields.Boolean,
+}
+
 user_fields = {
     'id':   fields.Integer,
     'email':   fields.String,
@@ -15,12 +23,14 @@ user_fields = {
     'is_friend': fields.Boolean,
 }
 
-lock_fields = {
+user_fields_with_locks = {
     'id':   fields.Integer,
-    'name': fields.String,
-    'owner_id': fields.Integer,
-    'requested_open':   fields.Boolean,
-    'actually_open':   fields.Boolean,
+    'email':   fields.String,
+    'first_name':   fields.String,
+    'last_name':   fields.String,
+    'active':   fields.Boolean,
+    'is_friend': fields.Boolean,
+    'your_locks': fields.List(fields.Nested(lock_fields)),
 }
 
 friend_fields = {
