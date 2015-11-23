@@ -64,12 +64,12 @@ def add_is_friend(users, request):
     return users
 
 
-@api.doc(responses={200: 'yas'})
+@api.doc(responses={200: 'Successfully pinged API'})
 class HelloWorld(Resource):
     def get(self):
         return {'hello': 'world'}
 
-
+@api.doc(responses={200: 'Successfully logged in '})
 class ProtectedResource(Resource):
     """
     This endpoint is protected by basic auth and is only used for testing
@@ -79,15 +79,15 @@ class ProtectedResource(Resource):
     def get(self):
         return {"message": "Hello"}, 200
 
-
+@api.doc(responses={200: 'Lock Successfully Opened', 401: 'User has no permission to open lock'})
 class OpenLock(Resource):
     """
     This endpoint opens the lock if lockID and associated user is consistent within the database
     """
     decorators = [requires_auth]
-
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
+        """Opens a Lock"""
         return change_lock_state(lock_id, True)
 
 
@@ -99,6 +99,7 @@ class CloseLock(Resource):
 
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
+        """Closes a Lock"""
         return change_lock_state(lock_id, False)
 
 
@@ -136,7 +137,7 @@ class UserList(Resource):
     @requires_auth
     @marshal_with(serialisers.user_fields)
     def get(self):
-        """ Gets list of users """
+        """Gets list of users """
         users = db.session.query(User)
 
         # optionally allow the user list to be filter by lock id
@@ -150,7 +151,7 @@ class UserList(Resource):
 
     @marshal_with(serialisers.user_fields)
     def post(self):
-        """ Register User """
+        """Register User"""
         email = request.form['email']
         password = encrypt_password(request.form['password'])
         first_name = "" + request.form['first_name']
@@ -167,12 +168,14 @@ class UserList(Resource):
 
 class UserDetail(Resource):
     decorators = [requires_auth]
-    # return user information
-    @marshal_with(serialisers.user_fields)
+    @marshal_with(serialisers.user_fields_with_locks)
     def get(self, user_id):
+        """Gets Friend Information"""
         user_exists = User.query.filter_by(id=user_id)
         if user_exists > 0:
-            return add_is_friend(user_exists.first(), request), 200
+            user = add_related_locks([user_exists.first()], request)[0]
+            user = add_is_friend(user, request)
+            return user, 200
         else:
             return user_id, 404
 
@@ -245,34 +248,7 @@ class Status(Resource):
         else:
             return False, 404
 
-
-class FriendList(Resource):
-    decorators = [requires_auth]
-
-    @marshal_with(serialisers.user_fields)
-    def post(self):
-
-        friend_id = int(request.form['friend_id'])
-        email = request.authorization.username
-        user_id = User.query.filter_by(email=email).first().id
-
-        existing_friend = Friend.query.filter_by(id=user_id, friend_id=friend_id)
-        friend_user_row = User.query.filter_by(id=friend_id).first()
-
-        if (not existing_friend.count() > 0) and friend_id != user_id:
-
-            friendship = Friend(id=user_id, friend_id=friend_id)
-
-            db.session.add(friendship)
-            db.session.commit()
-
-            return add_is_friend(friend_user_row, request), 201
-
-        else:
-
-            return add_is_friend(friend_user_row, request), 401
-
-    def add_related_locks(self, users, request):
+def add_related_locks(users, request):
         """ For each friend, add all the locks that they are members of and you are the owner of """
         my_id = User.query.filter_by(email=request.authorization.username).first().id
         # get all he locks where I am the owner
@@ -301,6 +277,34 @@ class FriendList(Resource):
 
         return users
 
+class FriendList(Resource):
+    decorators = [requires_auth]
+
+    @marshal_with(serialisers.user_fields)
+    def post(self):
+
+        friend_id = int(request.form['friend_id'])
+        email = request.authorization.username
+        user_id = User.query.filter_by(email=email).first().id
+
+        existing_friend = Friend.query.filter_by(id=user_id, friend_id=friend_id)
+        friend_user_row = User.query.filter_by(id=friend_id).first()
+
+        if (not existing_friend.count() > 0) and friend_id != user_id:
+
+            friendship = Friend(id=user_id, friend_id=friend_id)
+
+            db.session.add(friendship)
+            db.session.commit()
+
+            return add_is_friend(friend_user_row, request), 201
+
+        else:
+
+            return add_is_friend(friend_user_row, request), 401
+
+
+
 
     @marshal_with(serialisers.user_fields_with_locks)
     def get(self):
@@ -309,7 +313,7 @@ class FriendList(Resource):
         user_id = User.query.filter_by(email=email).first().id
 
         users = self.get_users_friends(user_id)
-        users = self.add_related_locks(users, request)
+        users = add_related_locks(users, request)
         users = add_is_friend(users, request)
 
         return users, 200
@@ -447,8 +451,6 @@ class FriendLocks(Resource):
             return True, 200
         else:
             return False, 401
-
-
 
 
 
