@@ -1,5 +1,6 @@
 from flask.ext.security import RoleMixin, UserMixin
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref
 
 __author__ = 'mingles'
@@ -55,6 +56,11 @@ class Lock(db.Model):
     requested_open = db.Column(db.Boolean())
     # this is true when the lock says it is open
     actually_open = db.Column(db.Boolean())
+
+    @hybrid_property
+    def owner_id(self):
+        return UserLock.query.filter_by(lock_id=self.id, is_owner=True).first().user_id
+
 
 
 class Role(db.Model, RoleMixin):
