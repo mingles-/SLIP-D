@@ -92,6 +92,20 @@ class SmartLockTestFriend(BaseTest):
         response = self.app.put('/open/123', headers=self.auth_header("test2@mail.com", "python"))
         self.assertEqual(401, response.status_code)
 
+    def test_lock_owner(self):
+
+        # add friend
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 201)
+
+        response = self.app.get('/lock/123', headers=self.auth_header("test2@mail.com", "python") )
+        self.assertEqual(self.user_id, json.loads(response.data)['owner_id'])
+
+        # successfully open lock as friend
+        response = self.app.put('/open/123', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(200, response.status_code)
+
+
 
 if __name__ == '__main__':
     unittest.main()
