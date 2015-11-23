@@ -1,3 +1,8 @@
+from flask import request
+from sqlalchemy import and_
+
+from Project.models import Friend, User
+
 __author__ = 'mingles'
 from flask_restful import fields
 
@@ -7,6 +12,7 @@ user_fields = {
     'first_name':   fields.String,
     'last_name':   fields.String,
     'active':   fields.Boolean,
+    'is_friend': fields.Boolean,
 }
 
 lock_fields = {

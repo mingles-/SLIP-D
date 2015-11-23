@@ -47,6 +47,21 @@ def requires_auth(f):
     return decorated
 
 
+def add_is_friend(users, request):
+    def get_is_friend(user_id, friend_id):
+        return db.session.query(exists().where(and_(Friend.id == user_id, Friend.friend_id == friend_id))).scalar()
+
+    my_id = User.query.filter_by(email=request.authorization.username).first().id
+
+    if isinstance(users, list):
+        for user in users:
+            user.is_friend = get_is_friend(my_id, user.id)
+    else:
+        get_is_friend(my_id, users.id)
+
+    return users
+
+
 @api.doc(responses={200: 'yas'})
 class HelloWorld(Resource):
     def get(self):
@@ -127,7 +142,9 @@ class UserList(Resource):
         if lock_id:
             users = users.filter(User.locks.any(id=lock_id))
 
-        return users.all(), 200
+        users = add_is_friend(users.all(), request)
+
+        return users, 200
 
     @marshal_with(serialisers.user_fields)
     def post(self):
@@ -153,7 +170,7 @@ class UserDetail(Resource):
     def get(self, user_id):
         user_exists = User.query.filter_by(id=user_id)
         if user_exists > 0:
-            return user_exists.first(), 200
+            return add_is_friend(user_exists.first(), request), 200
         else:
             return user_id, 404
 
@@ -166,7 +183,7 @@ class Me(Resource):
         email = request.authorization.username
         user_exists = User.query.filter_by(email=email)
         if user_exists > 0:
-            return user_exists.first(), 200
+            return add_is_friend(user_exists.first(), request), 200
         else:
             return email, 404
 
@@ -247,11 +264,11 @@ class FriendList(Resource):
             db.session.add(friendship)
             db.session.commit()
 
-            return friend_user_row, 201
+            return add_is_friend(friend_user_row, request), 201
 
         else:
 
-            return friend_user_row, 401
+            return add_is_friend(friend_user_row, request), 401
 
     @marshal_with(serialisers.user_fields)
     def get(self):
@@ -259,7 +276,7 @@ class FriendList(Resource):
         email = request.authorization.username
         user_id = User.query.filter_by(email=email).first().id
 
-        return self.get_users_friends(user_id), 200
+        return add_is_friend(self.get_users_friends(user_id), request), 200
 
     # @marshal_with(serialisers.user_fields)
     def delete(self):
@@ -275,7 +292,7 @@ class FriendList(Resource):
                                                    Friend.friend_id == friend_id).delete()
             db.session.commit()
 
-            return self.get_users_friends(user_id), 200
+            return add_is_friend(self.get_users_friends(user_id), request), 200
 
         else:
 
