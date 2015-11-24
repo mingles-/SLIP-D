@@ -106,16 +106,17 @@ class SmartLockTestFriend(BaseTest):
         self.assertEqual(200, response.status_code)
 
     def test_friend_list_with_your_locks(self):
+        self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124, lock_name="124"))
 
         # add friend
         response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 201)
 
         response = self.app.get('/friend', headers=self.auth_header("test@mail.com", "python"))
+        self.assertEqual(1, len(json.loads(response.data)[0]['your_locks']))
         self.assertEqual(123, json.loads(response.data)[0]['your_locks'][0]['id'])
 
     def test_friend_detail_with_your_locks(self):
-
         # add friend
         response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 201)
