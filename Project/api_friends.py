@@ -44,7 +44,7 @@ class FriendList(Resource):
 
         return users, 200
 
-    # @marshal_with(serialisers.user_fields)
+    @marshal_with(serialisers.user_fields)
     def delete(self):
 
         email = request.authorization.username
