@@ -113,8 +113,10 @@ class SmartLockTestFriend(BaseTest):
         self.assertEqual(response.status_code, 201)
 
         response = self.app.get('/friend', headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(1, len(json.loads(response.data)[0]['your_locks']))
-        self.assertEqual(123, json.loads(response.data)[0]['your_locks'][0]['id'])
+        data = json.loads(response.data)
+        self.assertEqual(2, len(data[0]['your_locks']))
+        self.assertTrue(data[0]['your_locks'][0]['has_access'])
+        self.assertFalse(data[0]['your_locks'][1]['has_access'])
 
     def test_friend_detail_with_your_locks(self):
         # add friend
@@ -122,8 +124,9 @@ class SmartLockTestFriend(BaseTest):
         self.assertEqual(response.status_code, 201)
 
         response = self.app.get('/user/{0}'.format(self.user2_id) , headers=self.auth_header("test@mail.com", "python"))
-        self.assertEqual(123, json.loads(response.data)['your_locks'][0]['id'])
-        self.assertNotEqual(json.loads(response.data)['is_friend'], None)
+        data = json.loads(response.data)
+        self.assertEqual(123, data['your_locks'][0]['id'])
+        self.assertNotEqual(data['is_friend'], None)
 
 
 if __name__ == '__main__':
