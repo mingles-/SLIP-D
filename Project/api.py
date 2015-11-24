@@ -430,8 +430,8 @@ class FriendLocks(Resource):
             return False, 400
 
     def delete(self):
-        friend_id = request.form['friend_id']
-        lock_id = request.form['lock_id']
+        friend_id = request.args['friend_id']
+        lock_id = request.args['lock_id']
         user_id = get_user_id()
 
         lock_exists = UserLock.query.filter_by(user_id=user_id, lock_id=lock_id)

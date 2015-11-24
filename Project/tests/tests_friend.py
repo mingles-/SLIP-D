@@ -67,7 +67,7 @@ class SmartLockTestFriend(BaseTest):
     def test_add_and_remove_friend_to_lock(self):
         response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 201)
-        response = self.app.delete('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        response = self.app.delete('/friend-lock', headers=self.auth_header("test@mail.com", "python"), query_string=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 200)
 
     def test_check_friend_open_lock(self):
@@ -85,7 +85,7 @@ class SmartLockTestFriend(BaseTest):
         self.assertEqual(200, response.status_code)
 
         # delete friend
-        response = self.app.delete('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        response = self.app.delete('/friend-lock', headers=self.auth_header("test@mail.com", "python"), query_string=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 200)
 
         # fail to open lock on friends account
