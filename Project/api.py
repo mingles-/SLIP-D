@@ -280,7 +280,7 @@ def add_related_locks(users, request):
         return db.session.query(l2).filter(
             db.session.query(ul2).filter(
                 ul2.user_id == user.id,
-                ul2.lock_id == l1.id
+                ul2.lock_id == l2.id
             ).exists(),
             l2.id.in_(my_locks_subquery)
         ).all()
