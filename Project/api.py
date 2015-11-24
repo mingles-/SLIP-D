@@ -319,7 +319,7 @@ class FriendList(Resource):
 
         email = request.authorization.username
         user_id = User.query.filter_by(email=email).first().id
-        friend_id = int(request.form['friend_id'])
+        friend_id = int(request.args['friend_id'])
         existing_friend = Friend.query.filter_by(id=user_id, friend_id=friend_id)
 
         if existing_friend.count() > 0:

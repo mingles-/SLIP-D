@@ -48,7 +48,7 @@ class SmartLockTestFriend(BaseTest):
         self.assertEqual(friend_id, self.user2_id)
 
     def test_delete_friends(self):
-        response = self.app.delete('/friend', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id))
+        response = self.app.delete('/friend', headers=self.auth_header("test@mail.com", "python"), query_string=dict(friend_id=self.user2_id))
         friend_id = json.loads(response.data)
         self.assertEqual(friend_id, [])
 
