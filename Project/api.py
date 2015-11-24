@@ -272,7 +272,7 @@ def add_related_locks(users, request):
         ).exists()
     ).subquery()
 
-    def add_your_locks(user):
+    def get_your_locks_has_access(user):
         """
         For a give user, add all the locks that you own and they are a member of.
         :param user: the user to add the locks to
@@ -285,11 +285,40 @@ def add_related_locks(users, request):
             l2.id.in_(my_locks_subquery)
         ).all()
 
+    def get_your_locks_not_has_access(user):
+        """
+        For a give user, add all the locks that you own and they are NOT a member of.
+        :param user: the user to add the locks to
+        """
+        return db.session.query(l2).filter(
+            ~db.session.query(ul2).filter(
+                ul2.user_id == user.id,
+                ul2.lock_id == l2.id
+            ).exists(),
+            l2.id.in_(my_locks_subquery)
+        ).all()
+
+    def add_has_access(locks, has_access):
+        for lock in locks:
+            lock.has_access = has_access
+        return locks
+
+    def add_related_locks_for_one_user(user):
+        # get has access locks
+        your_locks = get_your_locks_has_access(user)
+        your_locks = add_has_access(your_locks, True)
+
+        # get all locks without access
+        my_locks = get_your_locks_not_has_access(user)
+        my_locks = add_has_access(my_locks, False)
+
+        return your_locks + my_locks
+
     if isinstance(users, list):
         for user in users:
-            user.your_locks = add_your_locks(user)
+            user.your_locks = add_related_locks_for_one_user(user)
     else:
-        users.your_locks = add_your_locks(users)
+        users.your_locks = add_related_locks_for_one_user(users)
 
     return users
 
