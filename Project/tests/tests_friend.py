@@ -107,7 +107,6 @@ class SmartLockTestFriend(BaseTest):
 
     def test_friend_list_with_your_locks(self):
         self.app.post('/lock', headers=self.auth_header("test@mail.com", "python"), data=dict(lock_id=124, lock_name="124"))
-
         # add friend
         response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 201)
