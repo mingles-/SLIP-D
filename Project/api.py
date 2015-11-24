@@ -170,10 +170,11 @@ class UserDetail(Resource):
     decorators = [requires_auth]
     @marshal_with(serialisers.user_fields_with_locks)
     def get(self, user_id):
-        """Gets Friend Information"""
-        user_exists = User.query.filter_by(id=user_id)
-        if user_exists > 0:
-            user = add_related_locks([user_exists.first()], request)[0]
+        """ Gets Friend Information """
+        user_exists = db.session.query(exists().where(User.id == user_id)).scalar()
+        user = User.query.filter_by(id=user_id).first()
+        if user_exists:
+            user = add_related_locks(user, request)
             user = add_is_friend(user, request)
             return user, 200
         else:
@@ -248,34 +249,49 @@ class Status(Resource):
         else:
             return False, 404
 
+
 def add_related_locks(users, request):
-        """ For each friend, add all the locks that they are members of and you are the owner of """
-        my_id = User.query.filter_by(email=request.authorization.username).first().id
-        # get all he locks where I am the owner
-        ul1 = aliased(UserLock, name='ul1')
-        ul2 = aliased(UserLock, name='ul2')
-        l1 = aliased(Lock, name='l1')
-        l2 = aliased(Lock, name='l2')
+    """
+    For each friend, add all the locks that they are members of and you are the owner of
+    :param request: the request object from the view
+    :param users: the users to add locks to
+    """
+    my_id = User.query.filter_by(email=request.authorization.username).first().id
+    # get all he locks where I am the owner
+    ul1 = aliased(UserLock, name='ul1')
+    ul2 = aliased(UserLock, name='ul2')
+    l1 = aliased(Lock, name='l1')
+    l2 = aliased(Lock, name='l2')
 
-        my_locks_subquery = db.session.query(l1.id).filter(
-            db.session.query(ul1).filter(
-                ul1.is_owner,
-                ul1.user_id == my_id,
-                ul1.lock_id == l1.id
-            ).exists()
-        ).subquery()
+    my_locks_subquery = db.session.query(l1.id).filter(
+        db.session.query(ul1).filter(
+            ul1.is_owner,
+            ul1.user_id == my_id,
+            ul1.lock_id == l1.id
+        ).exists()
+    ).subquery()
 
+    def add_your_locks(user):
+        """
+        For a give user, add all the locks that you own and they are a member of.
+        :param user: the user to add the locks to
+        """
+        return db.session.query(l2).filter(
+            db.session.query(ul2).filter(
+                ul2.user_id == user.id,
+                ul2.lock_id == l1.id
+            ).exists(),
+            l2.id.in_(my_locks_subquery)
+        ).all()
+
+    if isinstance(users, list):
         for user in users:
-            # get all the locks that a friend is in
-            user.your_locks = db.session.query(l2).filter(
-                db.session.query(ul2).filter(
-                    ul2.user_id == user.id,
-                    ul2.lock_id == l1.id
-                ).exists(),
-                l2.id.in_(my_locks_subquery)
-            ).all()
+            user.your_locks = add_your_locks(user)
+    else:
+        users.your_locks = add_your_locks(users)
 
-        return users
+    return users
+
 
 class FriendList(Resource):
     decorators = [requires_auth]
