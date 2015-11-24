@@ -118,7 +118,7 @@ class SmartLockTestFriend(BaseTest):
         self.assertFalse(data[0]['your_locks'][1]['has_access'])
 
     def test_friend_detail_with_your_locks(self):
-        # add friend
+        # add friend to lock
         response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
         self.assertEqual(response.status_code, 201)
 
@@ -126,6 +126,19 @@ class SmartLockTestFriend(BaseTest):
         data = json.loads(response.data)
         self.assertEqual(123, data['your_locks'][0]['id'])
         self.assertNotEqual(data['is_friend'], None)
+
+    def test_delete_friend_with_lock(self):
+        # add friend to lock
+        response = self.app.post('/friend-lock', headers=self.auth_header("test@mail.com", "python"), data=dict(friend_id=self.user2_id, lock_id=123))
+        self.assertEqual(response.status_code, 201)
+
+        response = self.app.get('/lock', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(len(json.loads(response.data)), 2)
+
+        self.app.delete('/friend', headers=self.auth_header("test@mail.com", "python"), query_string=dict(friend_id=self.user2_id))
+
+        response = self.app.get('/lock', headers=self.auth_header("test2@mail.com", "python"))
+        self.assertEqual(len(json.loads(response.data)), 1)
 
 
 if __name__ == '__main__':
