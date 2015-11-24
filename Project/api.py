@@ -59,7 +59,7 @@ def add_is_friend(users, request):
         for user in users:
             user.is_friend = get_is_friend(my_id, user.id)
     else:
-        get_is_friend(my_id, users.id)
+        users.is_friend = get_is_friend(my_id, users.id)
 
     return users
 
@@ -168,6 +168,7 @@ class UserList(Resource):
 
 class UserDetail(Resource):
     decorators = [requires_auth]
+
     @marshal_with(serialisers.user_fields_with_locks)
     def get(self, user_id):
         """ Gets Friend Information """

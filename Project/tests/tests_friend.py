@@ -122,6 +122,7 @@ class SmartLockTestFriend(BaseTest):
 
         response = self.app.get('/user/{0}'.format(self.user2_id) , headers=self.auth_header("test@mail.com", "python"))
         self.assertEqual(123, json.loads(response.data)['your_locks'][0]['id'])
+        self.assertNotEqual(json.loads(response.data)['is_friend'], None)
 
 
 if __name__ == '__main__':
