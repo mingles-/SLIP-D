@@ -54,6 +54,12 @@ class FriendList(Resource):
 
         if existing_friend.count() > 0:
 
+            user_locks = UserLock.query.filter_by(user_id=user_id, is_owner=True).all()
+
+            for user_lock in user_locks:
+                db.session.query(UserLock).filter(UserLock.user_id == friend_id, UserLock.lock_id == user_lock.lock_id).delete()
+                db.session.commit()
+
             db.session.query(Friend).filter(Friend.id == user_id,
                                                    Friend.friend_id == friend_id).delete()
             db.session.commit()
