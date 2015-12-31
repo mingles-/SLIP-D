@@ -2,12 +2,13 @@ from api_helper_fuctions import *
 
 __author__ = 'mingles'
 
-
 class UserList(Resource):
     @requires_auth
     @marshal_with(serialisers.user_fields)
     def get(self):
-        """Gets list of users """
+        """
+        return list of users
+        """
         users = db.session.query(User)
 
         # optionally allow the user list to be filter by lock id
@@ -19,9 +20,12 @@ class UserList(Resource):
 
         return users, 200
 
+
     @marshal_with(serialisers.user_fields)
     def post(self):
-        """Register User"""
+        """
+        register user
+        """
         email = request.form['email']
         password = encrypt_password(request.form['password'])
         first_name = "" + request.form['first_name']
@@ -38,10 +42,11 @@ class UserList(Resource):
 
 class UserDetail(Resource):
     decorators = [requires_auth]
-
     @marshal_with(serialisers.user_fields_with_locks)
     def get(self, user_id):
-        """ Gets Friend Information """
+        """
+        return user information
+        """
         user_exists = db.session.query(exists().where(User.id == user_id)).scalar()
         user = User.query.filter_by(id=user_id).first()
         if user_exists:
@@ -54,9 +59,11 @@ class UserDetail(Resource):
 
 class Me(Resource):
     decorators = [requires_auth]
-    # return user information
     @marshal_with(serialisers.user_fields)
     def get(self):
+        """
+        return self information
+        """
         email = request.authorization.username
         user_exists = User.query.filter_by(email=email)
         if user_exists > 0:

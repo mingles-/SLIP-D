@@ -2,28 +2,36 @@ from api_helper_fuctions import *
 
 __author__ = 'mingles'
 
+
 class LockDetail(Resource):
     decorators = [requires_auth]
 
     @marshal_with(serialisers.lock_fields)
     def get(self, lock_id):
+        """
+        returns info associated with lock_id
+        """
         lock = Lock.query.filter_by(id=lock_id).first()
         return lock
 
 
 class LockList(Resource):
     decorators = [requires_auth]
-    # gets list of all locks
     @marshal_with(serialisers.lock_fields)
     def get(self):
+        """
+        return list of user's locks
+        """
         email = request.authorization.username
         user = User.query.filter_by(email=email).first()
         return list(user.locks)
 
 
-    # register lock
     @marshal_with(serialisers.lock_fields)
     def post(self):
+        """
+        register lock to user
+        """
         lock_name = request.form['lock_name']
         lock_id = request.form['lock_id']
         email = request.authorization.username
@@ -47,6 +55,9 @@ class LockList(Resource):
 
 class Status(Resource):
     def get(self, lock_id):
+        """
+        return lock status
+        """
         database_lock_id = Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
             state = database_lock_id.first().requested_open
@@ -65,7 +76,7 @@ class OpenLock(Resource):
     decorators = [requires_auth]
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        """Opens a Lock"""
+        """opens a Lock"""
         return change_lock_state(lock_id, True)
 
 # @api.doc(responses={200: 'Lock Successfully Closed', 401: 'User has no permission to open lock'})
@@ -77,5 +88,5 @@ class CloseLock(Resource):
 
     @marshal_with(serialisers.lock_fields)
     def put(self, lock_id):
-        """Closes a Lock"""
+        """closes a lock"""
         return change_lock_state(lock_id, False)

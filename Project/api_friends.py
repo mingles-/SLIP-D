@@ -8,7 +8,9 @@ class FriendList(Resource):
 
     @marshal_with(serialisers.user_fields)
     def post(self):
-
+        """
+        register friend
+        """
         friend_id = int(request.form['friend_id'])
         email = request.authorization.username
         user_id = User.query.filter_by(email=email).first().id
@@ -34,7 +36,9 @@ class FriendList(Resource):
 
     @marshal_with(serialisers.user_fields_with_locks)
     def get(self):
-
+        """
+        return list of friends with access to user's locks
+        """
         email = request.authorization.username
         user_id = User.query.filter_by(email=email).first().id
 
@@ -46,7 +50,9 @@ class FriendList(Resource):
 
     @marshal_with(serialisers.user_fields)
     def delete(self):
-
+        """
+        delete friend
+        """
         email = request.authorization.username
         user_id = User.query.filter_by(email=email).first().id
         friend_id = int(request.args['friend_id'])
@@ -83,8 +89,10 @@ class FriendList(Resource):
 class FriendLocks(Resource):
     decorators = [requires_auth]
 
-    # add a friend to one of your locks
     def post(self):
+        """
+        register friend to a lock
+        """
         friend_id = request.form['friend_id']
         lock_id = request.form['lock_id']
         user_id = get_user_id()
@@ -108,6 +116,9 @@ class FriendLocks(Resource):
             return False, 400
 
     def delete(self):
+        """
+        delete friend access to lock
+        """
         friend_id = request.args['friend_id']
         lock_id = request.args['lock_id']
         user_id = get_user_id()

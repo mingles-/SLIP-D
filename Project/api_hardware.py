@@ -4,8 +4,13 @@ __author__ = 'mingles'
 
 
 class ImOpen(Resource):
-    # im open
+
     def get(self, lock_id):
+
+        """
+        lock authenticates with server its open state
+        """
+
         database_lock_id = Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
 
@@ -27,8 +32,13 @@ class ImOpen(Resource):
 
 
 class ImClosed(Resource):
-    # im closed
+
     def get(self, lock_id):
+
+        """
+        lock authenticates with server its closed state
+        """
+
         database_lock_id = Lock.query.filter_by(id=lock_id)
         if database_lock_id.count() > 0:
 
@@ -45,18 +55,5 @@ class ImClosed(Resource):
                 lock.actually_open = False # Open the lock
                 db.session.commit()
                 return lock.actually_open, 200
-        else:
-            return False, 404
-
-
-class Status(Resource):
-    def get(self, lock_id):
-        database_lock_id = Lock.query.filter_by(id=lock_id)
-        if database_lock_id.count() > 0:
-            state = database_lock_id.first().requested_open
-            if state:
-                return state, 202
-            else:
-                return state, 200
         else:
             return False, 404

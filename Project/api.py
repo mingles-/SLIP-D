@@ -1,21 +1,12 @@
-from functools import wraps
-
-from flask import request, Response
-from flask.ext.security.utils import encrypt_password, verify_password
 import sys
-from sqlalchemy import exists, and_
-from sqlalchemy.orm import aliased
+from Project.app import app
+from flask.ext.restplus import Api, fields
 
-from Project import models, serialisers
-from Project.app import db, app
-from Project.auth import user_datastore
-from flask.ext.restplus import Api, Resource, fields, marshal_with
-
-from Project.models import User, UserLock, Lock, Friend
 
 sys.setrecursionlimit(1000000)
 
-api = Api(app)
+api = Api(app, version='4.0', title='smartlock', description='API for App Controlled Smartlock',
+          default="smartlock")
 ns = api.namespace('smartlock', description='User operations')
 
 from api_hardware import *
@@ -27,6 +18,7 @@ from api_friends import *
 @api.doc(responses={200: 'Successfully pinged API'})
 class HelloWorld(Resource):
     def get(self):
+        """Testing: Primative GET"""
         return {'hello': 'world'}
 
 
@@ -38,6 +30,7 @@ class ProtectedResource(Resource):
     decorators = [requires_auth]
 
     def get(self):
+        """Testing: Authentication"""
         return {"message": "Hello"}, 200
 
 
