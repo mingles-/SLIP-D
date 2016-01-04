@@ -25,13 +25,11 @@ class FriendList(Resource):
             db.session.add(friendship)
             db.session.commit()
 
-            return add_is_friend(friend_user_row, request), 201
+            return friend_user_row, 201
 
         else:
 
-            return add_is_friend(friend_user_row, request), 401
-
-
+            return friend_user_row, 401
 
 
     @marshal_with(serialisers.user_fields_with_locks)
@@ -44,7 +42,6 @@ class FriendList(Resource):
 
         users = self.get_users_friends(user_id)
         users = add_related_locks(users, request)
-        users = add_is_friend(users, request)
 
         return users, 200
 
@@ -70,7 +67,7 @@ class FriendList(Resource):
                                                    Friend.friend_id == friend_id).delete()
             db.session.commit()
 
-            return add_is_friend(self.get_users_friends(user_id), request), 200
+            return self.get_users_friends(user_id), 200
 
         else:
             # deleting friendship with an id which isn't a friend

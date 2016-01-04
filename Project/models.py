@@ -1,11 +1,14 @@
 from flask.ext.security import RoleMixin, UserMixin
+from flask import request
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import exists, and_
 from sqlalchemy.orm import backref
 
 __author__ = 'mingles'
 
 from app import db
+from sqlalchemy.orm import aliased
 
 # Define models
 role_user = db.Table('role_user',
@@ -25,6 +28,15 @@ class User(db.Model, UserMixin):
                             backref=db.backref('users', lazy='dynamic'))
     locks = association_proxy('user_locks', 'lock')
 
+    @hybrid_property
+    def name(self):
+        return '{} {}'.format(self.first_name,self.last_name)
+    
+    @hybrid_property
+    def is_friend(self):
+        my_id = User.query.filter_by(email=request.authorization.username).first().id
+        return db.session.query(exists().where(and_(Friend.id == my_id, Friend.friend_id == self.id))).scalar()
+    
 
 class UserLock(db.Model):
     __tablename__ = 'user_lock'
@@ -61,7 +73,16 @@ class Lock(db.Model):
     def owner_id(self):
         return UserLock.query.filter_by(lock_id=self.id, is_owner=True).first().user_id
 
-
+    @hybrid_property
+    def friends(self):
+        u = aliased(User, name='u')
+        ul = aliased(UserLock, name='ul')
+        return db.session.query(u).filter(
+            db.session.query(ul).filter(
+                ul.user_id == u.id,
+                ul.lock_id == self.id
+            ).exists()
+        ).all()
 
 class Role(db.Model, RoleMixin):
     __tablename__ = 'role'

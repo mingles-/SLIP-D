@@ -45,21 +45,6 @@ def requires_auth(f):
     return decorated
 
 
-def add_is_friend(users, request):
-    def get_is_friend(user_id, friend_id):
-        return db.session.query(exists().where(and_(Friend.id == user_id, Friend.friend_id == friend_id))).scalar()
-
-    my_id = User.query.filter_by(email=request.authorization.username).first().id
-
-    if isinstance(users, list):
-        for user in users:
-            user.is_friend = get_is_friend(my_id, user.id)
-    else:
-        users.is_friend = get_is_friend(my_id, users.id)
-
-    return users
-
-
 def is_user_in_db(user):
     email = User.query.filter_by(email=user)
     if email.count() > 0:
@@ -75,67 +60,90 @@ def add_related_locks(users, request):
     :param users: the users to add locks to
     """
     my_id = User.query.filter_by(email=request.authorization.username).first().id
-    # get all he locks where I am the owner
-    ul1 = aliased(UserLock, name='ul1')
-    ul2 = aliased(UserLock, name='ul2')
-    l1 = aliased(Lock, name='l1')
-    l2 = aliased(Lock, name='l2')
 
-    my_locks_subquery = db.session.query(l1.id).filter(
-        db.session.query(ul1).filter(
-            ul1.is_owner,
-            ul1.user_id == my_id,
-            ul1.lock_id == l1.id
+    _u1 = aliased(User, name='_u1')
+    _u2 = aliased(User, name='_u2')
+    _ul = aliased(UserLock, name='_ul')
+    _f1 = aliased(Friend, name='_f1')
+    _f2 = aliased(Friend, name='_f2')
+    _l = aliased(Lock, name='_l')
+
+    # Get all locks I have access to
+    my_locks_subquery = db.session.query(_l.id).filter(
+        db.session.query(_ul).filter(
+            _ul.is_owner,
+            _ul.user_id == my_id,
+            _ul.lock_id == _l.id,
+        ).exists()
+    ).subquery()    
+    
+    # Get all my friends
+    my_friends_subquery = db.session.query(_u1).filter(
+        db.session.query(_f1).filter(
+            _f1.id == my_id,
+            _f1.friend_id == _u1.id
         ).exists()
     ).subquery()
 
-    def get_your_locks_has_access(user):
+    # Get all the people whose friend I am
+    their_friend_subquery = db.session.query(_u2).filter(
+        db.session.query(_f2).filter(
+            _f2.id == _u2.id,
+            _f2.friend_id == my_id
+        ).exists()
+    ).subquery()
+    
+    def get_their_locks_has_access(user):
         """
-        For a give user, add all the locks that you own and they are a member of.
+        For a given user, add all the locks that they own and you are a member of.
         :param user: the user to add the locks to
         """
-        return db.session.query(l2).filter(
+        ul  = aliased(UserLock, name='ul')
+        ul2 = aliased(UserLock, name='ul2')
+        l = aliased(Lock, name='l')
+        # Get all locks they own that I have access to
+        return db.session.query(l).filter(
+            db.session.query(ul).filter(
+                ul.is_owner,
+                ul.user_id == user.id,
+                ul.lock_id == l.id
+            ).exists(),
             db.session.query(ul2).filter(
-                ul2.user_id == user.id,
-                ul2.lock_id == l2.id
-            ).exists(),
-            l2.id.in_(my_locks_subquery)
+                ul2.user_id == my_id,
+                ul2.lock_id == l.id
+            ).exists()
         ).all()
 
-    def get_your_locks_not_has_access(user):
+    def get_my_locks_has_access(user):
         """
-        For a give user, add all the locks that you own and they are NOT a member of.
+        For a given user, add all the locks that you own and they are a member of.
         :param user: the user to add the locks to
         """
-        return db.session.query(l2).filter(
-            ~db.session.query(ul2).filter(
-                ul2.user_id == user.id,
-                ul2.lock_id == l2.id
+        ul = aliased(UserLock, name='ul')
+        l = aliased(Lock, name='l')
+        # Get all locks I own that they have access to
+        return db.session.query(l).filter(
+            db.session.query(ul).filter(
+                ul.user_id == user.id,
+                ul.lock_id == l.id
             ).exists(),
-            l2.id.in_(my_locks_subquery)
+            l.id.in_(my_locks_subquery)
         ).all()
-
-    def add_has_access(locks, has_access):
-        for lock in locks:
-            lock.has_access = has_access
-        return locks
 
     def add_related_locks_for_one_user(user):
-        # get has access locks
-        your_locks = get_your_locks_has_access(user)
-        your_locks = add_has_access(your_locks, True)
+        # Get their locks (only ones I have access to)
+        their_locks = get_their_locks_has_access(user)
 
-        # get all locks without access
-        my_locks = get_your_locks_not_has_access(user)
-        my_locks = add_has_access(my_locks, False)
-
-        return your_locks + my_locks
+        # Get my locks they have access to
+        my_locks = get_my_locks_has_access(user)
+        
+        return their_locks, my_locks
 
     if isinstance(users, list):
         for user in users:
-            user.your_locks = add_related_locks_for_one_user(user)
+            user.their_locks, user.my_locks = add_related_locks_for_one_user(user)
     else:
-        users.your_locks = add_related_locks_for_one_user(users)
+        users.their_locks, users.my_locks = add_related_locks_for_one_user(users)
 
     return users
 

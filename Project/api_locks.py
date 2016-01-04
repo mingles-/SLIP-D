@@ -1,4 +1,5 @@
 from api_helper_fuctions import *
+from flask import request
 
 __author__ = 'mingles'
 
@@ -6,7 +7,7 @@ __author__ = 'mingles'
 class LockDetail(Resource):
     decorators = [requires_auth]
 
-    @marshal_with(serialisers.lock_fields)
+    @marshal_with(serialisers.lock_fields_with_friends)
     def get(self, lock_id):
         """
         returns info associated with lock_id
@@ -17,7 +18,7 @@ class LockDetail(Resource):
 
 class LockList(Resource):
     decorators = [requires_auth]
-    @marshal_with(serialisers.lock_fields)
+    @marshal_with(serialisers.lock_fields_with_friends)
     def get(self):
         """
         return list of user's locks

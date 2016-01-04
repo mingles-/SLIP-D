@@ -16,9 +16,7 @@ class UserList(Resource):
         if lock_id:
             users = users.filter(User.locks.any(id=lock_id))
 
-        users = add_is_friend(users.all(), request)
-
-        return users, 200
+        return users.all(), 200
 
 
     @marshal_with(serialisers.user_fields)
@@ -51,7 +49,6 @@ class UserDetail(Resource):
         user = User.query.filter_by(id=user_id).first()
         if user_exists:
             user = add_related_locks(user, request)
-            user = add_is_friend(user, request)
             return user, 200
         else:
             return user_id, 404
@@ -67,6 +64,6 @@ class Me(Resource):
         email = request.authorization.username
         user_exists = User.query.filter_by(email=email)
         if user_exists > 0:
-            return add_is_friend(user_exists.first(), request), 200
+            return user_exists.first(), 200
         else:
             return email, 404
